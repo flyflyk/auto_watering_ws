@@ -64,33 +64,25 @@
     </model>
 
     <!-- 充電站 -->
-    <model name='charging_station'>
+    <model name='charging_station_marker'>
       <static>true</static>
-      <pose>0.5 1.5 0.015 0 0 0</pose> 
-      <link name='link'>
-        <visual name='visual'>
+      <!-- 將 Z 軸高度設為 0，讓它完全貼在地面上 -->
+      <pose>0.5 1.5 0.0 0 0 0</pose> 
+      <link name='marker_link'>
+        <visual name='visual_marker'>
           <geometry>
             <cylinder>
-              <radius>0.3</radius>
-              <length>0.01</length>
+              <radius>0.15</radius> <!-- 半徑改為 15 公分 -->
+              <length>0.005</length> <!-- 厚度改為 5 毫米 -->
             </cylinder>
           </geometry>
           <material>
             <script>
               <uri>file://media/materials/scripts/gazebo.material</uri>
-              <!-- 亮綠色，方便識別 -->
               <name>Gazebo/Green</name> 
             </script>
           </material>
         </visual>
-        <collision name='collision'>
-            <geometry>
-                <cylinder>
-                    <radius>0.3</radius>
-                    <length>0.01</length>
-                </cylinder>
-            </geometry>
-        </collision>
       </link>
     </model>
 

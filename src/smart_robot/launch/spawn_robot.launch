@@ -13,11 +13,11 @@
     </include>
 
     <!-- 載入機器人模型 URDF 到參數伺服器 -->
-    <param name="robot_description" command="$(find xacro)/xacro $(find smart_robot)/urdf/smart_bot.urdf.xacro" />
+    <param name="robot_description" command="$(find xacro)/xacro $(find smart_robot)/urdf/smart_robot.urdf.xacro" />
 
     <!-- 在 Gazebo 中生成機器人模型 -->
     <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" 
-      args="-param robot_description -urdf -model smart_bot 
+      args="-param robot_description -urdf -model smart_robot 
              -x 0.5 
              -y 1.5 
              -z 0.05" />

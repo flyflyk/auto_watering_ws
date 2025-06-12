@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>smart_robot</name>
+  <version>0.0.0</version>
+  <description>The smart_robot package for auto-watering robot</description>
+  <maintainer email="flyflyk@todo.todo">flyflyk</maintainer>
+  <license>TODO</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <!-- 核心依賴 -->
+  <depend>roscpp</depend>
+  <depend>rospy</depend>
+  <depend>std_msgs</depend>
+  <depend>geometry_msgs</depend>
+  <depend>sensor_msgs</depend>
+  <depend>nav_msgs</depend>
+  <depend>std_srvs</depend>
+  <depend>tf</depend>
+  
+  <!-- Action 相關依賴 -->
+  <depend>actionlib</depend>
+  <depend>actionlib_msgs</depend>
+
+  <!-- Gazebo 相關依賴 -->
+  <depend>gazebo_ros</depend>
+
+  <!-- 訊息生成依賴 -->
+  <build_depend>message_generation</build_depend>
+  <exec_depend>message_runtime</exec_depend>
+
+</package>

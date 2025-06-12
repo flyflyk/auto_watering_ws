@@ -1,0 +1,16 @@
+<launch>
+    <!-- 1. 啟動 Gazebo 和機器人模型 -->
+    <include file="$(find smart_robot)/launch/spawn_robot.launch" />
+
+    <!-- 2. 從 YAML 檔案載入植物位置到參數伺服器 -->
+    <rosparam file="$(find smart_robot)/config/plant_locations.yaml" command="load" ns="manager_node" />
+
+    <!-- 3. 啟動所有Python節點 -->
+    <node pkg="smart_robot" type="moisture_sensor_node.py" name="moisture_sensor_node" output="screen" />
+    <node pkg="smart_robot" type="pump_driver_node.py" name="pump_driver_node" output="screen" />
+    <node pkg="smart_robot" type="navigator_node.py" name="navigator_node" output="screen" />
+    
+    <!-- 延遲啟動 manager_node，確保其他節點都已準備就緒 -->
+    <node pkg="smart_robot" type="manager_node.py" name="manager_node" output="screen" launch-prefix="bash -c 'sleep 5; $0 $@' "/>
+
+</launch>

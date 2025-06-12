@@ -50,7 +50,7 @@ catkin_install_python(PROGRAMS
   scripts/pump_driver_node.py
   scripts/moisture_sensor_node.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)
+)ls
 
 ## 指定要安裝的 Launch 和其他檔案
 install(DIRECTORY launch urdf worlds config

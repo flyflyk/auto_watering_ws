@@ -1,0 +1,16 @@
+/build/
+/devel/
+/install/
+/logs/
+.catkin_tools/
+
+__pycache__/
+*.pyc
+*.pyo
+
+.DS_Store
+Thumbs.db
+*~
+*.swp
+*.swo
+*.bak

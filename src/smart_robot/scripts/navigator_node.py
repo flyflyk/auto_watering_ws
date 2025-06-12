@@ -14,6 +14,11 @@ class NavigatorNode:
     def __init__(self):
         rospy.init_node('navigator_node')
 
+        # --- 狀態定義 ---
+        self.STATE_GOAL_SEEKING = 0
+        self.STATE_WALL_FOLLOWING = 1
+        self.current_state = self.STATE_GOAL_SEEKING
+
         self.cmd_vel_pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
         self.scan_sub = rospy.Subscriber('/scan', LaserScan, self.scan_callback)
         self.odom_sub = rospy.Subscriber('/odom', Odometry, self.odom_callback)
@@ -21,11 +26,19 @@ class NavigatorNode:
         self.server = actionlib.SimpleActionServer('move_to_plant', MoveToPlantAction, self.execute, False)
         self.server.start()
 
+        # --- 感測器數據 ---
         self.current_pos = Point()
         self.current_yaw = 0.0
-        self.front_dist = 999.0
-        
-        rospy.loginfo("Navigator Action Server is ready.")
+        # 將雷射數據分區：右、右前、正前、左前、左
+        self.regions = {
+            'right': float('inf'),
+            'fright': float('inf'),
+            'front': float('inf'),
+            'fleft': float('inf'),
+            'left': float('inf'),
+        }
+
+        rospy.loginfo("Navigator Action Server with Bug Algorithm is ready.")
 
     def odom_callback(self, msg):
         self.current_pos = msg.pose.pose.position
@@ -33,18 +46,22 @@ class NavigatorNode:
         _, _, self.current_yaw = euler_from_quaternion([orientation_q.x, orientation_q.y, orientation_q.z, orientation_q.w])
 
     def scan_callback(self, msg):
-        ranges_in_front = msg.ranges[0:15] + msg.ranges[345:360]
-        valid_ranges = [r for r in ranges_in_front if r > 0.0 and not math.isinf(r)]
-        
-        if valid_ranges:
-            self.front_dist = min(valid_ranges)
-        else:
-            self.front_dist = 999.0
+        # 將360度的雷射數據分成5個區域，取每個區域的最小值
+        # 角度分佈： [右, 右前, 正前, 左前, 左]
+        # 360 -> 300, 300 -> 345, 345 -> 15, 15 -> 60, 60 -> 90
+        self.regions = {
+            'right':  min(min(msg.ranges[285:325]), 10),
+            'fright': min(min(msg.ranges[325:345]), 10),
+            'front':  min(min(msg.ranges[0:15] + msg.ranges[345:360]), 10),
+            'fleft':  min(min(msg.ranges[15:35]), 10),
+            'left':   min(min(msg.ranges[35:75]), 10),
+        }
 
     def execute(self, goal):
         target_pos = goal.target_plant_position
-        rospy.loginfo(f"Received goal to move to {target_pos.x, target_pos.y}")
+        rospy.loginfo(f"Received goal to move to ({target_pos.x:.2f}, {target_pos.y:.2f})")
         
+        self.current_state = self.STATE_GOAL_SEEKING # 每次新任務都重置狀態
         rate = rospy.Rate(10)
         feedback = MoveToPlantFeedback()
         result = MoveToPlantResult()
@@ -55,58 +72,94 @@ class NavigatorNode:
                 result.success = False
                 break
             
-            # --- 核心導航邏輯 ---
-            # 1. 避障優先
-            if self.front_dist < 0.5:
-                self.stop_and_turn()
-                rate.sleep()
-                continue
-
-            # 2. 計算到目標的距離和角度
-            dist_to_goal = math.sqrt((target_pos.x - self.current_pos.x)**2 + (target_pos.y - self.current_pos.y)**2)
+            # --- 核心狀態機邏輯 ---
+            move_cmd = Twist()
             
-            # 如果已到達
-            if dist_to_goal < 0.2:
+            # 計算到目標的距離，如果已到達則成功
+            dist_to_goal = math.sqrt((target_pos.x - self.current_pos.x)**2 + (target_pos.y - self.current_pos.y)**2)
+            if dist_to_goal < 0.25:
                 rospy.loginfo("Goal reached.")
                 result.success = True
                 break
 
-            # 3. 朝向目標
-            angle_to_goal = math.atan2(target_pos.y - self.current_pos.y, target_pos.x - self.current_pos.x)
-            angle_error = angle_to_goal - self.current_yaw
-            
-            # 修正角度，使其在-pi到pi之間
-            if angle_error > math.pi: angle_error -= 2 * math.pi
-            if angle_error < -math.pi: angle_error += 2 * math.pi
+            # 狀態一：尋找目標
+            if self.current_state == self.STATE_GOAL_SEEKING:
+                # 檢查是否需要切換到沿牆模式
+                if self.regions['front'] < 0.6:
+                    rospy.logwarn("Obstacle detected! Switching to WALL_FOLLOWING state.")
+                    self.current_state = self.STATE_WALL_FOLLOWING
+                else:
+                    move_cmd = self.calculate_goal_seeking_cmd(target_pos)
 
-            # 4. 發布移動指令
-            move_cmd = Twist()
-            if abs(angle_error) > 0.1: # 如果角度偏差大，先轉向
-                move_cmd.linear.x = 0.0
-                move_cmd.angular.z = 0.4 if angle_error > 0 else -0.4
-            else: # 角度差不多了，前進
-                move_cmd.linear.x = 0.2
-                move_cmd.angular.z = 0.0
+            # 狀態二：沿牆行走
+            elif self.current_state == self.STATE_WALL_FOLLOWING:
+                # 檢查是否可以切換回尋找目標模式
+                if self.is_path_to_goal_clear(target_pos):
+                    rospy.loginfo("Path to goal is clear. Switching back to GOAL_SEEKING state.")
+                    self.current_state = self.STATE_GOAL_SEEKING
+                else:
+                    move_cmd = self.calculate_wall_following_cmd()
             
             self.cmd_vel_pub.publish(move_cmd)
 
-            # 發布回饋
             feedback.current_robot_position = self.current_pos
             self.server.publish_feedback(feedback)
-            
             rate.sleep()
 
-        # 停止機器人
+        # 任務結束，停止機器人
         self.cmd_vel_pub.publish(Twist())
         if result.success:
             self.server.set_succeeded(result)
 
-    def stop_and_turn(self):
-        rospy.logwarn("Obstacle detected! Stopping and turning.")
+    def calculate_goal_seeking_cmd(self, target_pos):
+        """計算朝向目標的移動指令"""
         move_cmd = Twist()
-        move_cmd.linear.x = 0.0
-        move_cmd.angular.z = 0.5 # 左轉
-        self.cmd_vel_pub.publish(move_cmd)
+        angle_to_goal = math.atan2(target_pos.y - self.current_pos.y, target_pos.x - self.current_pos.x)
+        angle_error = self.normalize_angle(angle_to_goal - self.current_yaw)
+
+        if abs(angle_error) > 0.2: # 如果角度偏差大，先轉向
+            move_cmd.linear.x = 0.1
+            move_cmd.angular.z = 0.4 if angle_error > 0 else -0.4
+        else: # 角度差不多了，前進
+            move_cmd.linear.x = 0.25
+            move_cmd.angular.z = 0.0
+        return move_cmd
+
+    def calculate_wall_following_cmd(self):
+        """計算沿牆行走的移動指令 (保持在牆的右側)"""
+        move_cmd = Twist()
+        # 規則：
+        # 1. 如果正前方太近，左轉
+        if self.regions['front'] < 0.5:
+            move_cmd.linear.x = 0.0
+            move_cmd.angular.z = 0.5
+        # 2. 否則，如果右前方也安全，可以稍微右轉去貼近牆壁
+        elif self.regions['fright'] > 0.7:
+            move_cmd.linear.x = 0.15
+            move_cmd.angular.z = -0.4
+        # 3. 否則，保持直行
+        else:
+            move_cmd.linear.x = 0.2
+            move_cmd.angular.z = 0.0
+        return move_cmd
+
+    def is_path_to_goal_clear(self, target_pos):
+        """檢查當前朝向目標的方向是否通暢"""
+        angle_to_goal = math.atan2(target_pos.y - self.current_pos.y, target_pos.x - self.current_pos.x)
+        angle_error = self.normalize_angle(angle_to_goal - self.current_yaw)
+        
+        # 如果目標就在正前方 (角度誤差小)，且正前方沒有障礙物
+        if abs(angle_error) < math.pi / 4 and self.regions['front'] > 1.0:
+            return True
+        return False
+
+    def normalize_angle(self, angle):
+        """將角度正規化到 -pi 到 pi 之間"""
+        if angle > math.pi:
+            angle -= 2 * math.pi
+        if angle < -math.pi:
+            angle += 2 * math.pi
+        return angle
 
 if __name__ == '__main__':
     try:

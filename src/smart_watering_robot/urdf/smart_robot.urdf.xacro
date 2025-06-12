@@ -1,0 +1,204 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="smart_bot">
+
+    <!-- 定義一些常用的常數 -->
+    <xacro:property name="base_radius" value="0.15" /> <!-- 底盤半徑 -->
+    <xacro:property name="base_height" value="0.1" />  <!-- 底盤高度 -->
+    <xacro:property name="wheel_radius" value="0.05" /> <!-- 輪子半徑 -->
+    <xacro:property name="wheel_width" value="0.02" />  <!-- 輪子寬度 -->
+    <xacro:property name="caster_radius" value="0.025" /> <!-- 滾珠輪半徑 -->
+    <xacro:property name="laser_size" value="0.05" /> <!-- 雷射尺寸 -->
+
+    <!-- 慣性矩陣計算的宏 -->
+    <xacro:macro name="box_inertia" params="m w h d">
+        <inertial>
+            <mass value="${m}"/>
+            <inertia ixx="${m*(h*h+d*d)/12}" ixy="0" ixz="0" iyy="${m*(w*w+d*d)/12}" iyz="0" izz="${m*(w*w+h*h)/12}"/>
+        </inertial>
+    </xacro:macro>
+    <xacro:macro name="cylinder_inertia" params="m r h">
+        <inertial>
+            <mass value="${m}"/>
+            <inertia ixx="${m*(3*r*r+h*h)/12}" ixy="0" ixz="0" iyy="${m*(3*r*r+h*h)/12}" iyz="0" izz="${m*r*r/2}"/>
+        </inertial>
+    </xacro:macro>
+    <xacro:macro name="sphere_inertia" params="m r">
+        <inertial>
+            <mass value="${m}"/>
+            <inertia ixx="${2*m*r*r/5}" ixy="0" ixz="0" iyy="${2*m*r*r/5}" iyz="0" izz="${2*m*r*r/5}"/>
+        </inertial>
+    </xacro:macro>
+
+    <!-- 1. 機器人主體 (底盤) -->
+    <link name="base_footprint"/>
+
+    <link name="base_link">
+        <visual>
+            <geometry>
+                <cylinder radius="${base_radius}" length="${base_height}"/>
+            </geometry>
+            <material name="blue">
+                <color rgba="0.2 0.6 1.0 1.0"/>
+            </material>
+        </visual>
+        <collision>
+            <geometry>
+                <cylinder radius="${base_radius}" length="${base_height}"/>
+            </geometry>
+        </collision>
+        <xacro:cylinder_inertia m="5.0" r="${base_radius}" h="${base_height}"/>
+    </link>
+
+    <joint name="base_joint" type="fixed">
+        <parent link="base_footprint"/>
+        <child link="base_link"/>
+        <origin xyz="0 0 ${wheel_radius}" rpy="0 0 0"/>
+    </joint>
+
+    <!-- 2. 右輪 -->
+    <link name="right_wheel">
+        <visual>
+            <geometry>
+                <cylinder radius="${wheel_radius}" length="${wheel_width}"/>
+            </geometry>
+            <material name="black">
+                <color rgba="0.1 0.1 0.1 1.0"/>
+            </material>
+        </visual>
+        <collision>
+            <geometry>
+                <cylinder radius="${wheel_radius}" length="${wheel_width}"/>
+            </geometry>
+        </collision>
+        <xacro:cylinder_inertia m="0.5" r="${wheel_radius}" h="${wheel_width}"/>
+    </link>
+
+    <joint name="right_wheel_joint" type="continuous">
+        <parent link="base_link"/>
+        <child link="right_wheel"/>
+        <origin xyz="0 -${base_radius} -${base_height/2 - wheel_radius}" rpy="-${pi/2} 0 0"/>
+        <axis xyz="0 0 1"/>
+    </joint>
+
+    <!-- 3. 左輪 -->
+    <link name="left_wheel">
+        <visual>
+            <geometry>
+                <cylinder radius="${wheel_radius}" length="${wheel_width}"/>
+            </geometry>
+            <material name="black"/>
+        </visual>
+        <collision>
+            <geometry>
+                <cylinder radius="${wheel_radius}" length="${wheel_width}"/>
+            </geometry>
+        </collision>
+        <xacro:cylinder_inertia m="0.5" r="${wheel_radius}" h="${wheel_width}"/>
+    </link>
+
+    <joint name="left_wheel_joint" type="continuous">
+        <parent link="base_link"/>
+        <child link="left_wheel"/>
+        <origin xyz="0 ${base_radius} -${base_height/2 - wheel_radius}" rpy="${pi/2} 0 0"/>
+        <axis xyz="0 0 -1"/>
+    </joint>
+
+    <!-- 4. 前方滾珠輪 -->
+    <link name="caster_wheel">
+        <visual>
+            <geometry>
+                <sphere radius="${caster_radius}"/>
+            </geometry>
+            <material name="grey">
+                <color rgba="0.5 0.5 0.5 1.0"/>
+            </material>
+        </visual>
+        <collision>
+            <geometry>
+                <sphere radius="${caster_radius}"/>
+            </geometry>
+        </collision>
+        <xacro:sphere_inertia m="0.3" r="${caster_radius}"/>
+    </link>
+
+    <joint name="caster_wheel_joint" type="fixed">
+        <parent link="base_link"/>
+        <child link="caster_wheel"/>
+        <origin xyz="${base_radius*0.8} 0 -${base_height/2 - caster_radius}" rpy="0 0 0"/>
+    </joint>
+
+    <!-- 5. 雷射掃描儀 (LIDAR) -->
+    <link name="laser_link">
+        <visual>
+            <geometry>
+                <cylinder radius="${laser_size}" length="${laser_size}"/>
+            </geometry>
+            <material name="red">
+                <color rgba="1.0 0.0 0.0 1.0"/>
+            </material>
+        </visual>
+        <collision>
+            <geometry>
+                <cylinder radius="${laser_size}" length="${laser_size}"/>
+            </geometry>
+        </collision>
+        <xacro:cylinder_inertia m="0.1" r="${laser_size}" h="${laser_size}"/>
+    </link>
+
+    <joint name="laser_joint" type="fixed">
+        <parent link="base_link"/>
+        <child link="laser_link"/>
+        <origin xyz="0 0 ${base_height/2 + laser_size/2}" rpy="0 0 0"/>
+    </joint>
+
+    <!-- Gazebo 插件 -->
+
+    <!-- 1. 差速驅動插件 (讓輪子動起來) -->
+    <gazebo>
+        <plugin name="differential_drive_controller" filename="libgazebo_ros_diff_drive.so">
+            <alwaysOn>true</alwaysOn>
+            <updateRate>100</updateRate>
+            <leftJoint>left_wheel_joint</leftJoint>
+            <rightJoint>right_wheel_joint</rightJoint>
+            <wheelSeparation>${base_radius*2}</wheelSeparation>
+            <wheelDiameter>${wheel_radius*2}</wheelDiameter>
+            <torque>20</torque>
+            <!-- 這個插件會訂閱 /cmd_vel 主題 -->
+            <commandTopic>cmd_vel</commandTopic>
+            <!-- 這個插件會發布 odom 主題 -->
+            <odometryTopic>odom</odometryTopic>
+            <odometryFrame>odom</odometryFrame>
+            <robotBaseFrame>base_footprint</robotBaseFrame>
+        </plugin>
+    </gazebo>
+
+    <!-- 2. 雷射掃描儀插件 -->
+    <gazebo reference="laser_link">
+        <sensor type="ray" name="laser_sensor">
+            <pose>0 0 0 0 0 0</pose>
+            <visualize>true</visualize>
+            <update_rate>10</update_rate>
+            <ray>
+                <scan>
+                    <horizontal>
+                        <samples>360</samples>
+                        <resolution>1</resolution>
+                        <min_angle>-3.14159</min_angle>
+                        <max_angle>3.14159</max_angle>
+                    </horizontal>
+                </scan>
+                <range>
+                    <min>0.1</min>
+                    <max>12.0</max>
+                    <resolution>0.01</resolution>
+                </range>
+            </ray>
+            <plugin name="gazebo_ros_laser" filename="libgazebo_ros_laser.so">
+                <!-- 這個插件會發布 /scan 主題 -->
+                <topicName>/scan</topicName>
+                <frameName>laser_link</frameName>
+            </plugin>
+        </sensor>
+    </gazebo>
+
+</robot>

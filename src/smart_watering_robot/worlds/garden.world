@@ -1,0 +1,129 @@
+<?xml version="1.0" ?>
+<sdf version="1.6">
+  <world name="flower_bed_world_v2">
+
+    <!-- 基本環境：陽光和草地背景 -->
+    <include>
+      <uri>model://sun</uri>
+    </include>
+    <include>
+      <uri>model://ground_plane</uri>
+      <name>grass_background</name>
+    </include>
+
+    <!-- 花圃的土壤地面 -->
+    <model name='soil_ground'>
+      <static>true</static>
+      <pose>2.5 0 0.01 0 0 0</pose>
+      <link name='link'>
+        <visual name='visual'>
+          <geometry>
+            <box><size>5 4 0.02</size></box>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/Dirt</name>
+            </script>
+          </material>
+        </visual>
+        <collision name='collision'>
+            <geometry>
+                <box><size>5 4 0.02</size></box>
+            </geometry>
+        </collision>
+      </link>
+    </model>
+
+    <!-- 花圃的圍牆 -->
+    <model name='flower_bed_walls'>
+      <static>true</static>
+      <pose>2.5 0 0.1 0 0 0</pose>
+      <link name='walls_link'>
+        <!-- 北邊 -->
+        <visual name='wall_north_visual'><pose>0 2 0 0 0 0</pose><geometry><box><size>5 0.1 0.2</size></box></geometry>
+          <material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Bricks</name></script></material>
+        </visual>
+        <collision name='wall_north_collision'><pose>0 2 0 0 0 0</pose><geometry><box><size>5 0.1 0.2</size></box></geometry></collision>
+        <!-- 南邊 -->
+        <visual name='wall_south_visual'><pose>0 -2 0 0 0 0</pose><geometry><box><size>5 0.1 0.2</size></box></geometry>
+          <material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Bricks</name></script></material>
+        </visual>
+        <collision name='wall_south_collision'><pose>0 -2 0 0 0 0</pose><geometry><box><size>5 0.1 0.2</size></box></geometry></collision>
+        <!-- 東邊 -->
+        <visual name='wall_east_visual'><pose>2.5 0 0 0 0 0</pose><geometry><box><size>0.1 4 0.2</size></box></geometry>
+          <material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Bricks</name></script></material>
+        </visual>
+        <collision name='wall_east_collision'><pose>2.5 0 0 0 0 0</pose><geometry><box><size>0.1 4 0.2</size></box></geometry></collision>
+        <!-- 西邊 -->
+        <visual name='wall_west_visual'><pose>-2.5 0 0 0 0 0</pose><geometry><box><size>0.1 4 0.2</size></box></geometry>
+          <material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Bricks</name></script></material>
+        </visual>
+        <collision name='wall_west_collision'><pose>-2.5 0 0 0 0 0</pose><geometry><box><size>0.1 4 0.2</size></box></geometry></collision>
+      </link>
+    </model>
+
+    <!-- 充電站 -->
+    <model name='charging_station'>
+      <static>true</static>
+      <pose>0.5 1.5 0.015 0 0 0</pose> 
+      <link name='link'>
+        <visual name='visual'>
+          <geometry>
+            <cylinder>
+              <radius>0.3</radius>
+              <length>0.01</length>
+            </cylinder>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <!-- 亮綠色，方便識別 -->
+              <name>Gazebo/Green</name> 
+            </script>
+          </material>
+        </visual>
+        <collision name='collision'>
+            <geometry>
+                <cylinder>
+                    <radius>0.3</radius>
+                    <length>0.01</length>
+                </cylinder>
+            </geometry>
+        </collision>
+      </link>
+    </model>
+
+    <!-- 目標盆栽 -->
+    <include><uri>model://flower_pot</uri><name>plant_target_1</name><pose>1.0 1.0 0.05 0 0 0.5</pose></include>
+    <include><uri>model://flower_pot</uri><name>plant_target_2</name><pose>4.0 -1.2 0.05 0 0 2.1</pose></include>
+    <include><uri>model://flower_pot</uri><name>plant_target_3</name><pose>2.5 0.5 0.05 0 0 -1.0</pose></include>
+    <include><uri>model://flower_pot</uri><name>plant_target_4</name><pose>1.5 -1.5 0.05 0 0 1.2</pose></include>
+    <include><uri>model://flower_pot</uri><name>plant_target_5</name><pose>3.5 1.5 0.05 0 0 -2.5</pose></include>
+    <include><uri>model://flower_pot</uri><name>plant_target_6</name><pose>0.8 -0.5 0.05 0 0 0.8</pose></include>
+
+    <!-- 障礙物 -->
+    <model name='rock_obstacle_1'><static>true</static><pose>2.0 -0.8 0.15 0 0 0</pose>
+      <link name='link'><collision name='c'><geometry><sphere><radius>0.15</radius></sphere></geometry></collision>
+        <visual name='v'><geometry><sphere><radius>0.15</radius></sphere></geometry>
+          <material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material>
+        </visual>
+      </link>
+    </model>
+    <model name='rock_obstacle_2'><static>true</static><pose>3.0 -0.1 0.12 0 0 0</pose>
+      <link name='link'><collision name='c'><geometry><sphere><radius>0.12</radius></sphere></geometry></collision>
+        <visual name='v'><geometry><sphere><radius>0.12</radius></sphere></geometry>
+          <material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material>
+        </visual>
+      </link>
+    </model>
+    <model name='rock_obstacle_3'><static>true</static><pose>1.2 1.5 0.18 0 0 0</pose>
+      <link name='link'><collision name='c'><geometry><sphere><radius>0.18</radius></sphere></geometry></collision>
+        <visual name='v'><geometry><sphere><radius>0.18</radius></sphere></geometry>
+          <material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Grey</name></script></material>
+        </visual>
+      </link>
+    </model>
+
+  </world>
+</sdf>

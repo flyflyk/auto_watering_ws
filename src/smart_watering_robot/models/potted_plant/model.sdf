@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<sdf version="1.6">
+  <model name="potted_plant">
+    <static>true</static> <!-- 設為 true 才不會被機器人撞倒 -->
+    <link name="pot">
+      <visual name="visual">
+        <geometry><cylinder><radius>0.15</radius><length>0.2</length></cylinder></geometry>
+        <material><ambient>0.6 0.4 0.2 1</ambient></material> <!-- 陶土色 -->
+      </visual>
+      <collision name="collision"><geometry><cylinder><radius>0.15</radius><length>0.2</length></cylinder></geometry></collision>
+    </link>
+  </model>
+</sdf>

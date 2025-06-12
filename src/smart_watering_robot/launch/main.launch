@@ -1,0 +1,20 @@
+<launch>
+    <!-- 
+        步驟 1: 包含(include)生成機器人和世界的 launch 檔案。
+        這會啟動 Gazebo, Robot State Publisher, 並生成您的 smart_bot 模型。
+    -->
+    <include file="$(find smart_robot)/launch/spawn_robot.launch" />
+
+    <!-- 
+        步驟 2: 在這裡啟動您自己撰寫的 Python/C++ 節點。
+        我們將會啟動 navigator_node。
+        'pkg' 是您的 package 名稱。
+        'type' 是您的 python 腳本檔案名稱。
+        'name' 是這個節點在 ROS 網路中的唯一名稱。
+        'output="screen"' 會將節點的 print() 訊息直接顯示在終端機上，方便除錯。
+    -->
+    <node pkg="smart_robot" type="navigator_node.py" name="navigator_node" output="screen" />
+
+    <!-- 未來您寫好的其他節點 (manager_node, pump_driver_node) 也會加在這裡 -->
+
+</launch>

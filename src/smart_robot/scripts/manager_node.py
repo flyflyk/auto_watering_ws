@@ -27,6 +27,11 @@ class ManagerNode:
         rospy.loginfo("Waiting for trigger_water service...")
         rospy.wait_for_service('/trigger_water')
         self.trigger_water_service = rospy.ServiceProxy('/trigger_water', Trigger)
+
+        # 等待 /get_moisture 服務
+        rospy.loginfo("Waiting for get_moisture service...")
+        rospy.wait_for_service('/get_moisture')
+        self.get_moisture_service = rospy.ServiceProxy('/get_moisture', Trigger)
         
         rospy.loginfo("Manager Node is ready.")
 
@@ -46,17 +51,31 @@ class ManagerNode:
             if self.move_client.get_state() == actionlib.GoalStatus.SUCCEEDED:
                 rospy.loginfo(f"Successfully arrived at {plant['name']}.")
                 
-                # 2. 觸發澆水
-                try:
-                    rospy.loginfo("Triggering water pump...")
-                    response = self.trigger_water_service(TriggerRequest())
-                    if response.success:
-                        rospy.loginfo("Watering complete. Waiting for 2 seconds.")
-                        rospy.sleep(2) # 模擬澆水時間
+                 # 2. 呼叫服務來獲取濕度
+            try:
+                rospy.loginfo("Requesting moisture level...")
+                moisture_response = self.get_moisture_service(TriggerRequest())
+                if moisture_response.success:
+                    current_moisture = float(moisture_response.message)
+                    rospy.loginfo(f"Current moisture is {current_moisture:.2f}%.")
+                    
+                    # 3. 根據濕度決定是否澆水
+                    if current_moisture < 50.0: # 假設低於50%就需要澆水
+                        rospy.loginfo("Moisture is low. Triggering water pump...")
+                        water_response = self.trigger_water_service(TriggerRequest())
+                        if water_response.success:
+                            rospy.loginfo("Watering complete. Waiting for 2 seconds.")
+                            rospy.sleep(2)
+                        else:
+                            rospy.logwarn(f"Pump driver reported failure: {water_response.message}")
                     else:
-                        rospy.logwarn(f"Pump driver reported failure: {response.message}")
-                except rospy.ServiceException as e:
-                    rospy.logerr(f"Service call failed: {e}")
+                        rospy.loginfo("Moisture is sufficient. Skipping watering.")
+
+                else:
+                    rospy.logwarn("Failed to get moisture reading.")
+
+            except rospy.ServiceException as e:
+                rospy.logerr(f"Service call failed: {e}")
             else:
                 rospy.logwarn(f"Failed to move to {plant['name']}. Skipping.")
         

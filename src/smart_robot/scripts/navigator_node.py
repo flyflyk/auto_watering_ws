@@ -46,15 +46,18 @@ class NavigatorNode:
         _, _, self.current_yaw = euler_from_quaternion([orientation_q.x, orientation_q.y, orientation_q.z, orientation_q.w])
 
     def scan_callback(self, msg):
-        # 將360度的雷射數據分成5個區域，取每個區域的最小值
-        # 角度分佈： [右, 右前, 正前, 左前, 左]
-        # 360 -> 300, 300 -> 345, 345 -> 15, 15 -> 60, 60 -> 90
+        # 建立一個輔助函數來安全地取最小值
+        def get_safe_min(range_list):
+            valid_ranges = [r for r in range_list if r > 0.0 and not math.isinf(r)]
+            return min(valid_ranges) if valid_ranges else 10.0
+
+        # 將360度的雷射數據分成5個區域
         self.regions = {
-            'right':  min(min(msg.ranges[285:325]), 10),
-            'fright': min(min(msg.ranges[325:345]), 10),
-            'front':  min(min(msg.ranges[0:15] + msg.ranges[345:360]), 10),
-            'fleft':  min(min(msg.ranges[15:35]), 10),
-            'left':   min(min(msg.ranges[35:75]), 10),
+            'right':  get_safe_min(msg.ranges[285:325]),
+            'fright': get_safe_min(msg.ranges[325:345]),
+            'front':  get_safe_min(msg.ranges[0:15] + msg.ranges[345:360]),
+            'fleft':  get_safe_min(msg.ranges[15:35]),
+            'left':   get_safe_min(msg.ranges[35:75]),
         }
 
     def execute(self, goal):

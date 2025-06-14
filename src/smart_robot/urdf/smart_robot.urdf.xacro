@@ -100,13 +100,13 @@
         </gazebo>
     </link>
 
-    <!-- 前腳輪 (Caster Wheel) -->
-    <joint name="caster_wheel_joint" type="fixed">
+    <!-- 前腳輪 (Front Caster Wheel) -->
+    <joint name="caster_wheel_front_joint" type="fixed">
         <parent link="base_link"/>
-        <child link="caster_wheel_link"/>
+        <child link="caster_wheel_front_link"/>
         <origin xyz="${chassis_radius*0.8} 0 -0.035" rpy="0 0 0"/>
     </joint>
-    <link name="caster_wheel_link">
+    <link name="caster_wheel_front_link">
         <visual>
             <geometry><sphere radius="${wheel_radius*0.5}"/></geometry>
             <material name="grey"><color rgba="0.5 0.5 0.5 1.0"/></material>
@@ -118,25 +118,23 @@
             <mass value="${caster_mass}"/>
             <xacro:sphere_inertia m="${caster_mass}" r="${wheel_radius*0.5}"/>
         </inertial>
-        <gazebo reference="caster_wheel_link">
+        <gazebo reference="caster_wheel_front_link">
             <mu1>0.1</mu1>
             <mu2>0.1</mu2>
-            <kp>1000000.0</kp>
-            <kd>100.0</kd>
             <material>Gazebo/Grey</material>
         </gazebo>
     </link>
 
-    <!-- 後腳輪 (Caster Wheel) -->
+    <!-- 後腳輪 (Rear Caster Wheel) -->
     <joint name="caster_wheel_rear_joint" type="fixed">
         <parent link="base_link"/>
         <child link="caster_wheel_rear_link"/>
         <origin xyz="-${chassis_radius*0.8} 0 -0.035" rpy="0 0 0"/>
     </joint>
-    <link name="caster_wheel_link">
+    <link name="caster_wheel_rear_link">
         <visual>
             <geometry><sphere radius="${wheel_radius*0.5}"/></geometry>
-            <material name="grey"><color rgba="0.5 0.5 0.5 1.0"/></material>
+            <material name="grey"/>
         </visual>
         <collision>
             <geometry><sphere radius="${wheel_radius*0.5}"/></geometry>
@@ -145,11 +143,9 @@
             <mass value="${caster_mass}"/>
             <xacro:sphere_inertia m="${caster_mass}" r="${wheel_radius*0.5}"/>
         </inertial>
-        <gazebo reference="caster_wheel_link">
+        <gazebo reference="caster_wheel_rear_link">
             <mu1>0.1</mu1>
             <mu2>0.1</mu2>
-            <kp>1000000.0</kp>
-            <kd>100.0</kd>
             <material>Gazebo/Grey</material>
         </gazebo>
     </link>

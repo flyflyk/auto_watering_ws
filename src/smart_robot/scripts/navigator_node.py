@@ -80,66 +80,41 @@ class NavigatorNode:
 
     def execute(self, goal):
         target_pos = goal.target_plant_position
-        rospy.loginfo(f"Received goal to move to ({target_pos.x:.2f}, {target_pos.y:.2f})")
-        
-        # Bug 演算法的相關狀態，暫時用不到
-        # self.current_state = self.STATE_GOAL_SEEKING
-        # self.hit_point = None
-        # self.min_dist_to_goal = math.sqrt((target_pos.x - self.current_pos.x)**2 + (target_pos.y - self.current_pos.y)**2)
-
-        rate = rospy.Rate(10)
-        feedback = MoveToPlantFeedback()
+        rospy.loginfo(f"Executing goal to move to ({target_pos.x:.2f}, {target_pos.y:.2f})")
+        rate = rospy.Rate(20) # 提高更新頻率
         result = MoveToPlantResult()
-
         while not rospy.is_shutdown():
             if self.server.is_preempt_requested():
-                self.server.set_preempted()
-                result.success = False
-                break
-            
+                self.server.set_preempted(); result.success = False; break
             dist_to_goal = math.sqrt((target_pos.x - self.current_pos.x)**2 + (target_pos.y - self.current_pos.y)**2)
-            rospy.loginfo_throttle(1.0, f"Dist: {dist_to_goal:.2f}, Front: {self.regions['front']:.2f}")
-
             if dist_to_goal < self.goal_tolerance:
-                rospy.loginfo("Goal reached.")
-                result.success = True
-                break
+                rospy.loginfo("Goal reached."); result.success = True; break
             
-            # 只要前方沒有障礙物，就一直執行尋的邏輯
-            if self.regions['front'] > self.obstacle_threshold:
-                move_cmd = self.calculate_goal_seeking_cmd(target_pos)
-            else:
-                # 如果遇到障礙物，暫時的策略是：停下
-                rospy.logwarn_throttle(1, "Obstacle detected! Stopping.")
-                move_cmd = Twist() # linear.x = 0, angular.z = 0
-
+            # 這裡我們甚至可以暫時忽略障礙物，專心驗證移動
+            move_cmd = self.calculate_goal_seeking_cmd(target_pos)
             self.cmd_vel_pub.publish(move_cmd)
 
-            feedback.current_robot_position = self.current_pos
-            self.server.publish_feedback(feedback)
+            # 為了除錯，我們打印出收到的 odom 和發出的 cmd_vel
+            rospy.loginfo_throttle(1.0, f"Odom: [x={self.current_pos.x:.2f}, y={self.current_pos.y:.2f}], Cmd: [lin={move_cmd.linear.x:.2f}, ang={move_cmd.angular.z:.2f}]")
+            
             rate.sleep()
-
         self.cmd_vel_pub.publish(Twist())
-        if result.success:
+        if result.success: 
             self.server.set_succeeded(result)
 
     def calculate_goal_seeking_cmd(self, target_pos):
         move_cmd = Twist()
         angle_to_goal = math.atan2(target_pos.y - self.current_pos.y, target_pos.x - self.current_pos.x)
         angle_error = self.normalize_angle(angle_to_goal - self.current_yaw)
-
-        # 1. 如果角度誤差很大，優先轉彎
         if abs(angle_error) > 0.35:
             move_cmd.linear.x = 0.0
             angular_speed = self.angular_p_gain * angle_error
             move_cmd.angular.z = max(-self.turn_speed, min(self.turn_speed, angular_speed))
-        # 2. 如果角度基本對準了，就全速前進，並進行微調
         else:
             move_cmd.linear.x = self.forward_speed
-            # 繼續使用 P 控制器進行細微的角度調整，而不是完全停止轉向
             move_cmd.angular.z = self.angular_p_gain * angle_error
-        
         return move_cmd
+    
     def calculate_wall_following_cmd(self):
         move_cmd = Twist()
         # 1. 如果正前方或右前方太近，說明要撞牆或入彎，必須左轉

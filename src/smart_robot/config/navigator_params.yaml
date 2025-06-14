@@ -4,7 +4,7 @@ obstacle_threshold: 0.6
 path_clear_threshold: 1.0
 
 # Speed Control
-forward_speed: 0.25 
+forward_speed: 0.5 
 slow_forward_speed: 0.15 
 turn_speed: 0.4
 wall_follow_turn_speed: 0.5

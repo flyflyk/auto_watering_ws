@@ -62,11 +62,9 @@ class NavigatorNode:
             valid_ranges = [r for r in range_list if r > 0.0 and not math.isinf(r)]
             return min(valid_ranges) if valid_ranges else 10.0
         self.regions = {
-            'right':  get_safe_min(msg.ranges[285:325]),
-            'fright': get_safe_min(msg.ranges[325:345]),
-            'front':  get_safe_min(msg.ranges[0:15] + msg.ranges[345:360]),
-            'fleft':  get_safe_min(msg.ranges[15:35]),
-            'left':   get_safe_min(msg.ranges[35:75]),
+            'fright': get_safe_min(msg.ranges[0:45]),      # 右前方 (約 -60 到 -15 度)
+            'front':  get_safe_min(msg.ranges[45:75]),     # 正前方 (約 -15 到 +15 度)
+            'fleft':  get_safe_min(msg.ranges[75:120]),    # 左前方 (約 +15 到 +60 度)
         }
 
     def execute(self, goal):

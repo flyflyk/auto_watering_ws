@@ -85,49 +85,56 @@ class NavigatorNode:
         # 1. 初始化/重置狀態
         self.current_state = self.STATE_GOAL_SEEKING
         self.min_dist_to_goal = math.sqrt((target_pos.x - self.current_pos.x)**2 + (target_pos.y - self.current_pos.y)**2)
+        # 從參數伺服器獲取最終接近距離，或者使用預設值
+        final_approach_dist = rospy.get_param('~final_approach_dist', 0.5)
 
         rate = rospy.Rate(50)
         result = MoveToPlantResult()
 
         while not rospy.is_shutdown():
             if self.server.is_preempt_requested():
-                self.server.set_preempted()
-                result.success = False
-                break
+                self.server.set_preempted(); result.success = False; break
             
             dist_to_goal = math.sqrt((target_pos.x - self.current_pos.x)**2 + (target_pos.y - self.current_pos.y)**2)
-            rospy.loginfo_throttle(1.0, f"State: {'GOAL_SEEKING' if self.current_state == self.STATE_GOAL_SEEKING else 'WALL_FOLLOWING'}, Dist: {dist_to_goal:.2f}, MinDist: {self.min_dist_to_goal:.2f}, Front: {self.regions['front']:.2f}")
+            rospy.loginfo_throttle(1.0, f"State: {'GS' if self.current_state == 0 else 'WF'}, Dist: {dist_to_goal:.2f}, MinDist: {self.min_dist_to_goal:.2f}, Front: {self.regions['front']:.2f}")
 
-            # 2. 檢查是否已到達目標
+            # ****** 關鍵修改: 引入新的邏輯層次 ******
+
+            # 優先級 1: 檢查是否已到達
             if dist_to_goal < self.goal_tolerance:
                 rospy.loginfo("Goal reached.")
                 result.success = True
                 break
-            
-            move_cmd = Twist()
 
-            # 3. 核心狀態機邏輯
-            if self.current_state == self.STATE_GOAL_SEEKING:
-                # 檢查是否需要切換到沿牆模式
-                if self.regions['front'] < self.obstacle_threshold:
-                    rospy.logwarn("Obstacle detected! Switching to WALL_FOLLOWING state.")
-                    self.current_state = self.STATE_WALL_FOLLOWING
-                else:
-                    move_cmd = self.calculate_goal_seeking_cmd(target_pos)
-                    # 在尋的模式下，不斷更新到目標的最小距離
-                    if dist_to_goal < self.min_dist_to_goal:
-                        self.min_dist_to_goal = dist_to_goal
+            # 優先級 2: 檢查是否進入「最終接近」模式
+            # 條件：離目標很近 (例如 < 0.5m)
+            if dist_to_goal < final_approach_dist:
+                rospy.loginfo_throttle(1.0, "Final approach mode: Moving straight to goal, ignoring obstacles.")
+                # 在最終接近時，我們只執行尋的邏輯，並且不切換到沿牆模式
+                # 這等於是信任我們的路徑，直接開過去
+                move_cmd = self.calculate_goal_seeking_cmd(target_pos)
 
-            elif self.current_state == self.STATE_WALL_FOLLOWING:
-                # 檢查是否可以切換回尋的模式
-                # 條件：當前離目標的距離，比歷史上任何時候都更近 (留有餘量)
-                if dist_to_goal < self.min_dist_to_goal - 0.1: 
-                    rospy.loginfo("Path to goal seems clear. Switching back to GOAL_SEEKING.")
-                    self.current_state = self.STATE_GOAL_SEEKING
-                else:
-                    move_cmd = self.calculate_wall_following_cmd()
+            # 優先級 3: 常規的尋的/沿牆邏輯
+            else:
+                if self.current_state == self.STATE_GOAL_SEEKING:
+                    if self.regions['front'] < self.obstacle_threshold:
+                        rospy.logwarn("Obstacle detected! Switching to WALL_FOLLOWING state.")
+                        self.current_state = self.STATE_WALL_FOLLOWING
+                        move_cmd = self.calculate_wall_following_cmd() # 立即執行一次沿牆，避免延遲
+                    else:
+                        move_cmd = self.calculate_goal_seeking_cmd(target_pos)
+                        if dist_to_goal < self.min_dist_to_goal:
+                            self.min_dist_to_goal = dist_to_goal
 
-            self.cmd_vel_pub.publish(move_cmd)    
+                elif self.current_state == self.STATE_WALL_FOLLOWING:
+                    if dist_to_goal < self.min_dist_to_goal - 0.1: 
+                        rospy.loginfo("Path to goal seems clear. Switching back to GOAL_SEEKING.")
+                        self.current_state = self.STATE_GOAL_SEEKING
+                        move_cmd = self.calculate_goal_seeking_cmd(target_pos) # 立即執行一次尋的
+                    else:
+                        move_cmd = self.calculate_wall_following_cmd()
+
+            self.cmd_vel_pub.publish(move_cmd)
             rate.sleep()
 
         self.cmd_vel_pub.publish(Twist())

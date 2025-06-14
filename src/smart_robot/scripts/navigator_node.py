@@ -106,13 +106,16 @@ class NavigatorNode:
         move_cmd = Twist()
         angle_to_goal = math.atan2(target_pos.y - self.current_pos.y, target_pos.x - self.current_pos.x)
         angle_error = self.normalize_angle(angle_to_goal - self.current_yaw)
+        angular_speed = self.angular_p_gain * angle_error
+        clamped_angular_speed = max(-self.turn_speed, min(self.turn_speed, angular_speed))
+
         if abs(angle_error) > 0.35:
             move_cmd.linear.x = 0.0
-            angular_speed = self.angular_p_gain * angle_error
-            move_cmd.angular.z = max(-self.turn_speed, min(self.turn_speed, angular_speed))
+            move_cmd.angular.z = clamped_angular_speed
         else:
             move_cmd.linear.x = self.forward_speed
-            move_cmd.angular.z = self.angular_p_gain * angle_error
+            move_cmd.angular.z = clamped_angular_speed
+            
         return move_cmd
     
     def calculate_wall_following_cmd(self):

@@ -33,6 +33,8 @@ class NavigatorNode:
         self.current_yaw = 0.0
         self.regions = {'right': 10.0, 'fright': 10.0, 'front': 10.0, 'fleft': 10.0, 'left': 10.0}
         self.angular_p_gain = rospy.get_param('~angular_p_gain', 2.0)
+        self.hit_point = None
+        self.min_dist_to_goal = float('inf')
 
         rospy.loginfo("Navigator Action Server with Bug Algorithm is ready.")
 
@@ -81,6 +83,9 @@ class NavigatorNode:
         rospy.loginfo(f"Received goal to move to ({target_pos.x:.2f}, {target_pos.y:.2f})")
         
         self.current_state = self.STATE_GOAL_SEEKING
+        self.hit_point = None
+        self.min_dist_to_goal = math.sqrt((target_pos.x - self.current_pos.x)**2 + (target_pos.y - self.current_pos.y)**2)
+
         rate = rospy.Rate(10)
         feedback = MoveToPlantFeedback()
         result = MoveToPlantResult()
@@ -98,16 +103,21 @@ class NavigatorNode:
                 break
 
             move_cmd = Twist()
+            
             if self.current_state == self.STATE_GOAL_SEEKING:
                 if self.regions['front'] < self.obstacle_threshold:
                     rospy.logwarn("Obstacle detected! Switching to WALL_FOLLOWING state.")
                     self.current_state = self.STATE_WALL_FOLLOWING
+                    self.hit_point = self.current_pos # 記錄遭遇點
                 else:
                     move_cmd = self.calculate_goal_seeking_cmd(target_pos)
+                    # 在尋的模式下，不斷更新到目標的最小距離
+                    if dist_to_goal < self.min_dist_to_goal:
+                        self.min_dist_to_goal = dist_to_goal
 
             elif self.current_state == self.STATE_WALL_FOLLOWING:
-                if self.is_path_to_goal_clear(target_pos):
-                    rospy.loginfo("Path to goal is clear. Switching back to GOAL_SEEKING state.")
+                if dist_to_goal < self.min_dist_to_goal - 0.1:
+                    rospy.loginfo("Path to goal seems clear. Switching back to GOAL_SEEKING.")
                     self.current_state = self.STATE_GOAL_SEEKING
                 else:
                     move_cmd = self.calculate_wall_following_cmd()
@@ -122,7 +132,6 @@ class NavigatorNode:
             self.server.set_succeeded(result)
 
     def calculate_goal_seeking_cmd(self, target_pos):
-        """計算朝向目標的移動指令 (使用 P 控制器)"""
         move_cmd = Twist()
         angle_to_goal = math.atan2(target_pos.y - self.current_pos.y, target_pos.x - self.current_pos.x)
         angle_error = self.normalize_angle(angle_to_goal - self.current_yaw)
@@ -157,14 +166,6 @@ class NavigatorNode:
             move_cmd.linear.x = self.forward_speed
             move_cmd.angular.z = 0.0
         return move_cmd
-
-    def is_path_to_goal_clear(self, target_pos):
-        angle_to_goal = math.atan2(target_pos.y - self.current_pos.y, target_pos.x - self.current_pos.x)
-        angle_error = self.normalize_angle(angle_to_goal - self.current_yaw)
-        
-        if abs(angle_error) < self.path_clear_angle and self.regions['front'] > self.path_clear_threshold:
-            return True
-        return False
 
     def normalize_angle(self, angle):
         while angle > math.pi: angle -= 2 * math.pi

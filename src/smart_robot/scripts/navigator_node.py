@@ -61,10 +61,18 @@ class NavigatorNode:
         def get_safe_min(range_list):
             valid_ranges = [r for r in range_list if r > 0.0 and not math.isinf(r)]
             return min(valid_ranges) if valid_ranges else 10.0
+
+        num_ranges = len(msg.ranges)
+        if num_ranges != 90:
+             rospy.logwarn_throttle(5, f"Expected 90 laser points, but got {num_ranges}. Check URDF configuration.")
+             return
+
         self.regions = {
-            'fright': get_safe_min(msg.ranges[0:45]),      # 右前方 (約 -60 到 -15 度)
-            'front':  get_safe_min(msg.ranges[45:75]),     # 正前方 (約 -15 到 +15 度)
-            'fleft':  get_safe_min(msg.ranges[75:120]),    # 左前方 (約 +15 到 +60 度)
+            'right':  float('inf'),
+            'fright': get_safe_min(msg.ranges[0:30]),
+            'front':  get_safe_min(msg.ranges[30:60]),
+            'fleft':  get_safe_min(msg.ranges[60:90]),
+            'left':   float('inf'),
         }
 
     def execute(self, goal):

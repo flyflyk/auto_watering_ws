@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
+import math
 import rospy
 import actionlib
 from geometry_msgs.msg import Point
@@ -14,13 +15,18 @@ class ManagerNode:
         rospy.loginfo("Manager Node starting...")
 
         # Get parameters
-        self.plant_locations = rospy.get_param("~plants", [])
+        plant_locations_raw = rospy.get_param("~plants", [])
         self.charging_station_pos = rospy.get_param("~charging_station/position", None)
 
-        if not self.plant_locations or not self.charging_station_pos:
+        if not plant_locations_raw or not self.charging_station_pos:
             rospy.logerr("Plant or charging station locations not found on parameter server.")
             rospy.signal_shutdown("Missing required parameters")
             return
+        
+        self.plant_locations = self.sort_plants_by_distance(plant_locations_raw)
+        rospy.loginfo("Plant locations sorted by distance:")
+        for plant in self.plant_locations:
+            rospy.loginfo(f"- {plant['name']} at distance {plant['distance']:.2f}m")
 
         # Action Client
         self.move_client = actionlib.SimpleActionClient('move_to_plant', MoveToPlantAction)
@@ -36,6 +42,20 @@ class ManagerNode:
         self.get_moisture_service = rospy.ServiceProxy('/get_moisture', GetMoisture)
         
         rospy.loginfo("Manager Node is ready.")
+    
+    def sort_plants_by_distance(self, plants):
+        start_pos = self.charging_station_pos
+        
+        # 1. 計算每個盆栽的距離並儲存
+        for plant in plants:
+            plant_pos = plant['position']
+            distance = math.sqrt((plant_pos['x'] - start_pos['x'])**2 + (plant_pos['y'] - start_pos['y'])**2)
+            plant['distance'] = distance
+        
+        # 2. 對列表進行排序
+        sorted_plants = sorted(plants, key=lambda p: p['distance'])
+        
+        return sorted_plants
 
     def run_watering_mission(self):
         rospy.loginfo("Starting watering mission...")

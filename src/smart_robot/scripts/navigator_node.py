@@ -81,26 +81,62 @@ class NavigatorNode:
     def execute(self, goal):
         target_pos = goal.target_plant_position
         rospy.loginfo(f"Executing goal to move to ({target_pos.x:.2f}, {target_pos.y:.2f})")
-        rate = rospy.Rate(60)
+
+        # 1. 初始化/重置狀態
+        self.current_state = self.STATE_GOAL_SEEKING
+        self.min_dist_to_goal = math.sqrt((target_pos.x - self.current_pos.x)**2 + (target_pos.y - self.current_pos.y)**2)
+
+        rate = rospy.Rate(50)
         result = MoveToPlantResult()
+
         while not rospy.is_shutdown():
             if self.server.is_preempt_requested():
-                self.server.set_preempted(); result.success = False; break
+                self.server.set_preempted()
+                result.success = False
+                break
+            
             dist_to_goal = math.sqrt((target_pos.x - self.current_pos.x)**2 + (target_pos.y - self.current_pos.y)**2)
-            if dist_to_goal < self.goal_tolerance:
-                rospy.loginfo("Goal reached."); result.success = True; break
-            
-            # 這裡我們甚至可以暫時忽略障礙物，專心驗證移動
-            move_cmd = self.calculate_goal_seeking_cmd(target_pos)
-            self.cmd_vel_pub.publish(move_cmd)
+            rospy.loginfo_throttle(1.0, f"State: {'GOAL_SEEKING' if self.current_state == self.STATE_GOAL_SEEKING else 'WALL_FOLLOWING'}, Dist: {dist_to_goal:.2f}, MinDist: {self.min_dist_to_goal:.2f}, Front: {self.regions['front']:.2f}")
 
-            # 為了除錯，我們打印出收到的 odom 和發出的 cmd_vel
-            rospy.loginfo_throttle(1.0, f"Odom: [x={self.current_pos.x:.2f}, y={self.current_pos.y:.2f}], Cmd: [lin={move_cmd.linear.x:.2f}, ang={move_cmd.angular.z:.2f}]")
+            # 2. 檢查是否已到達目標
+            if dist_to_goal < self.goal_tolerance:
+                rospy.loginfo("Goal reached.")
+                result.success = True
+                break
             
+            move_cmd = Twist()
+
+            # 3. 核心狀態機邏輯
+            if self.current_state == self.STATE_GOAL_SEEKING:
+                # 檢查是否需要切換到沿牆模式
+                if self.regions['front'] < self.obstacle_threshold:
+                    rospy.logwarn("Obstacle detected! Switching to WALL_FOLLOWING state.")
+                    self.current_state = self.STATE_WALL_FOLLOWING
+                else:
+                    move_cmd = self.calculate_goal_seeking_cmd(target_pos)
+                    # 在尋的模式下，不斷更新到目標的最小距離
+                    if dist_to_goal < self.min_dist_to_goal:
+                        self.min_dist_to_goal = dist_to_goal
+
+            elif self.current_state == self.STATE_WALL_FOLLOWING:
+                # 檢查是否可以切換回尋的模式
+                # 條件：當前離目標的距離，比歷史上任何時候都更近 (留有餘量)
+                if dist_to_goal < self.min_dist_to_goal - 0.1: 
+                    rospy.loginfo("Path to goal seems clear. Switching back to GOAL_SEEKING.")
+                    self.current_state = self.STATE_GOAL_SEEKING
+                else:
+                    move_cmd = self.calculate_wall_following_cmd()
+
+            self.cmd_vel_pub.publish(move_cmd)    
             rate.sleep()
+
         self.cmd_vel_pub.publish(Twist())
-        if result.success: 
+        if result.success:
             self.server.set_succeeded(result)
+        else:
+            if not self.server.is_preempt_requested():
+                rospy.logwarn("Action failed or timed out.")
+                self.server.set_aborted(result, "Navigation failed.")
 
     def calculate_goal_seeking_cmd(self, target_pos):
         move_cmd = Twist()
@@ -115,7 +151,7 @@ class NavigatorNode:
         else:
             move_cmd.linear.x = self.forward_speed
             move_cmd.angular.z = clamped_angular_speed
-            
+
         return move_cmd
     
     def calculate_wall_following_cmd(self):

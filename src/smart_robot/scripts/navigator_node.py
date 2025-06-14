@@ -81,7 +81,7 @@ class NavigatorNode:
     def execute(self, goal):
         target_pos = goal.target_plant_position
         rospy.loginfo(f"Executing goal to move to ({target_pos.x:.2f}, {target_pos.y:.2f})")
-        rate = rospy.Rate(20) # 提高更新頻率
+        rate = rospy.Rate(60)
         result = MoveToPlantResult()
         while not rospy.is_shutdown():
             if self.server.is_preempt_requested():

@@ -100,7 +100,7 @@
         </gazebo>
     </link>
 
-    <!-- 腳輪 (Caster Wheel) -->
+    <!-- 前腳輪 (Caster Wheel) -->
     <joint name="caster_wheel_joint" type="fixed">
         <parent link="base_link"/>
         <child link="caster_wheel_link"/>
@@ -127,11 +127,38 @@
         </gazebo>
     </link>
 
+    <!-- 後腳輪 (Caster Wheel) -->
+    <joint name="caster_wheel_rear_joint" type="fixed">
+        <parent link="base_link"/>
+        <child link="caster_wheel_rear_link"/>
+        <origin xyz="-${chassis_radius*0.8} 0 -0.035" rpy="0 0 0"/>
+    </joint>
+    <link name="caster_wheel_link">
+        <visual>
+            <geometry><sphere radius="${wheel_radius*0.5}"/></geometry>
+            <material name="grey"><color rgba="0.5 0.5 0.5 1.0"/></material>
+        </visual>
+        <collision>
+            <geometry><sphere radius="${wheel_radius*0.5}"/></geometry>
+        </collision>
+        <inertial>
+            <mass value="${caster_mass}"/>
+            <xacro:sphere_inertia m="${caster_mass}" r="${wheel_radius*0.5}"/>
+        </inertial>
+        <gazebo reference="caster_wheel_link">
+            <mu1>0.1</mu1>
+            <mu2>0.1</mu2>
+            <kp>1000000.0</kp>
+            <kd>100.0</kd>
+            <material>Gazebo/Grey</material>
+        </gazebo>
+    </link>
+
     <!-- 雷射掃描儀 (Lidar) -->
     <joint name="laser_joint" type="fixed">
         <parent link="base_link"/>
         <child link="laser_link"/>
-        <origin xyz="0 0 ${chassis_height/2 + 0.02}" rpy="0 0 0"/>
+        <origin xyz="${chassis_radius} 0 -0.01" rpy="0 0 0"/>
     </joint>
     <link name="laser_link">
         <visual>

@@ -32,6 +32,7 @@ class NavigatorNode:
         self.current_pos = Point()
         self.current_yaw = 0.0
         self.regions = {'right': 10.0, 'fright': 10.0, 'front': 10.0, 'fleft': 10.0, 'left': 10.0}
+        self.angular_p_gain = rospy.get_param('~angular_p_gain', 2.0)
 
         rospy.loginfo("Navigator Action Server with Bug Algorithm is ready.")
 
@@ -121,16 +122,27 @@ class NavigatorNode:
             self.server.set_succeeded(result)
 
     def calculate_goal_seeking_cmd(self, target_pos):
+        """計算朝向目標的移動指令 (使用 P 控制器)"""
         move_cmd = Twist()
         angle_to_goal = math.atan2(target_pos.y - self.current_pos.y, target_pos.x - self.current_pos.x)
         angle_error = self.normalize_angle(angle_to_goal - self.current_yaw)
+        angular_speed = self.angular_p_gain * angle_error
+        
+        # 限制最大角速度
+        if angular_speed > self.turn_speed:
+            angular_speed = self.turn_speed
+        elif angular_speed < -self.turn_speed:
+            angular_speed = -self.turn_speed
 
-        if abs(angle_error) > self.angle_tolerance:
-            move_cmd.linear.x = self.slow_forward_speed # Slow while rotating
-            move_cmd.angular.z = self.turn_speed if angle_error > 0 else -self.turn_speed
+        # 角度越偏，前進速度越慢，這有助於穩定轉彎
+        if abs(angle_error) > math.pi / 4:
+            linear_speed = 0.0
         else:
-            move_cmd.linear.x = self.forward_speed
-            move_cmd.angular.z = 0.0
+            linear_speed = self.forward_speed * (1 - abs(angle_error) / (math.pi / 4))
+
+        move_cmd.linear.x = linear_speed
+        move_cmd.angular.z = angular_speed
+        
         return move_cmd
 
     def calculate_wall_following_cmd(self):

@@ -12,40 +12,31 @@
     </include>
 
     <!-- 花圃的土壤地面 -->
-    <model name='soil_ground'>
+    <model name="dirt_ground_plane">
       <static>true</static>
-      <pose>0 0 0.01 0 0 0</pose>
-      <link name='link'>
-        <visual name='visual'>
+      <link name="link">
+        <collision name="collision">
           <geometry>
-            <box><size>100 100 0.02</size></box>
+            <plane><normal>0 0 1</normal><size>100 100</size></plane>
           </geometry>
           <surface>
             <friction>
-              <ode>
-                <mu>1.0</mu>
-                <mu2>1.0</mu2>
-              </ode>
+              <ode><mu>1.0</mu><mu2>1.0</mu2></ode>
             </friction>
-            <contact>
-              <ode>
-                <kp>1e+13</kp>
-                <kd>1</kd>
-              </ode>
-            </contact>
           </surface>
+        </collision>
+        <visual name="visual">
+          <cast_shadows>false</cast_shadows>
+          <geometry>
+            <plane><normal>0 0 1</normal><size>100 100</size></plane>
+          </geometry>
           <material>
             <script>
               <uri>file://media/materials/scripts/gazebo.material</uri>
-              <name>Gazebo/Dirt</name>
+              <name>Gazebo/Rocky</name>
             </script>
           </material>
         </visual>
-        <collision name='collision'>
-            <geometry>
-                <box><size>100 100 0.02</size></box>
-            </geometry>
-        </collision>
       </link>
     </model>
 

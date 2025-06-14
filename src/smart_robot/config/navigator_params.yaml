@@ -17,3 +17,4 @@ wall_follow:
 # Angle Control
 angle_tolerance: 0.2
 path_clear_angle: 0.785
+angular_p_gain: 2.0

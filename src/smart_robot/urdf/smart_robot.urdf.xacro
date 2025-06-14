@@ -10,7 +10,7 @@
     <xacro:property name="chassis_height" value="0.1"/>
     <xacro:property name="wheel_radius" value="0.05"/>
     <xacro:property name="wheel_length" value="0.04"/>
-    <xacro:property name="wheel_separation" value="0.35"/> <!-- 兩個輪子之間的距離 -->
+    <xacro:property name="wheel_separation" value="0.35"/>
 
     <!-- 慣性矩陣宏 -->
     <xacro:macro name="cylinder_inertia" params="m r h">
@@ -90,7 +90,7 @@
     <joint name="caster_wheel_joint" type="fixed">
         <parent link="base_link"/>
         <child link="caster_wheel_link"/>
-        <origin xyz="${chassis_radius*0.8} 0 -${wheel_radius*0.5}" rpy="0 0 0"/>
+        <origin xyz="${chassis_radius*0.8} 0 0" rpy="0 0 0"/>
     </joint>
     <link name="caster_wheel_link">
         <visual>

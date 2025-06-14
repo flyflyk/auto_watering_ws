@@ -97,6 +97,7 @@ class NavigatorNode:
                 break
             
             dist_to_goal = math.sqrt((target_pos.x - self.current_pos.x)**2 + (target_pos.y - self.current_pos.y)**2)
+            rospy.loginfo_throttle(1.0, f"State: {self.current_state}, Dist: {dist_to_goal:.2f}, MinDist: {self.min_dist_to_goal:.2f}, Front: {self.regions['front']:.2f}")
             if dist_to_goal < self.goal_tolerance:
                 rospy.loginfo("Goal reached.")
                 result.success = True
@@ -136,18 +137,16 @@ class NavigatorNode:
         angle_to_goal = math.atan2(target_pos.y - self.current_pos.y, target_pos.x - self.current_pos.x)
         angle_error = self.normalize_angle(angle_to_goal - self.current_yaw)
         angular_speed = self.angular_p_gain * angle_error
-        
-        # 限制最大角速度
-        if angular_speed > self.turn_speed:
-            angular_speed = self.turn_speed
-        elif angular_speed < -self.turn_speed:
-            angular_speed = -self.turn_speed
+        angular_speed = max(-self.turn_speed, min(self.turn_speed, angular_speed))
 
-        # 角度越偏，前進速度越慢，這有助於穩定轉彎
-        if abs(angle_error) > math.pi / 4:
+        # 即使角度偏差大，也給一個最小的前進速度，避免完全卡住
+        if abs(angle_error) > math.pi / 2:
             linear_speed = 0.0
+        elif abs(angle_error) > math.pi / 4:
+            linear_speed = self.slow_forward_speed
         else:
-            linear_speed = self.forward_speed * (1 - abs(angle_error) / (math.pi / 4))
+            scale = 1 - (abs(angle_error) / (math.pi / 4))
+            linear_speed = self.slow_forward_speed + (self.forward_speed - self.slow_forward_speed) * scale
 
         move_cmd.linear.x = linear_speed
         move_cmd.angular.z = angular_speed
@@ -156,13 +155,19 @@ class NavigatorNode:
 
     def calculate_wall_following_cmd(self):
         move_cmd = Twist()
-        if self.regions['front'] < self.wf_front_dist:
+        # 1. 如果正前方或右前方太近，說明要撞牆或入彎，必須左轉
+        if self.regions['front'] < self.wf_front_dist or self.regions['fright'] < self.wf_front_dist:
+            rospy.logwarn_throttle(1, "Wall Following: Turning left to avoid collision.")
             move_cmd.linear.x = 0.0
             move_cmd.angular.z = self.wall_follow_turn_speed
-        elif self.regions['fright'] > self.wf_side_dist:
+        # 2. 如果右邊太空曠了，可以稍微右轉去貼近牆壁
+        elif self.regions['right'] > self.wf_side_dist:
+            rospy.logwarn_throttle(1, "Wall Following: Turning right to find wall.")
             move_cmd.linear.x = self.slow_forward_speed
             move_cmd.angular.z = -self.turn_speed
+        # 3. 距離正好，沿牆直行
         else:
+            rospy.logwarn_throttle(1, "Wall Following: Moving straight.")
             move_cmd.linear.x = self.forward_speed
             move_cmd.angular.z = 0.0
         return move_cmd

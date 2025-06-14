@@ -102,13 +102,16 @@ find_package(catkin REQUIRED COMPONENTS
 #   cfg/DynReconf2.cfg
 # )
 
-## 增加 Action 檔案
+add_service_files(
+  FILES
+  GetMoisture.srv
+)
+
 add_action_files(
   DIRECTORY action
   FILES MoveToPlant.action
 )
 
-## 生成訊息 (包含 Actions)
 generate_messages(
   DEPENDENCIES
     actionlib_msgs
@@ -116,7 +119,6 @@ generate_messages(
     std_msgs
 )
 
-## 安裝 Python 腳本
 catkin_install_python(PROGRAMS
   scripts/manager_node.py
   scripts/navigator_node.py
@@ -125,9 +127,12 @@ catkin_install_python(PROGRAMS
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
-## 安裝 Launch 和其他檔案
 install(DIRECTORY launch urdf worlds config
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+)
+
+install(DIRECTORY srv
+    DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/srv
 )
 
 ###################################

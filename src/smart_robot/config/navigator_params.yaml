@@ -1,0 +1,19 @@
+# Behavior
+goal_tolerance: 0.25
+obstacle_threshold: 0.6
+path_clear_threshold: 1.0
+
+# Speed Control
+forward_speed: 0.25 
+slow_forward_speed: 0.15 
+turn_speed: 0.4
+wall_follow_turn_speed: 0.5
+
+# Wall Follow 
+wall_follow:
+  front_dist_trigger: 0.5
+  side_dist_target: 0.7
+
+# Angle Control
+angle_tolerance: 0.2
+path_clear_angle: 0.785

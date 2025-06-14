@@ -4,6 +4,7 @@
 
     <!-- 2. 從 YAML 檔案載入植物位置到參數伺服器 -->
     <rosparam file="$(find smart_robot)/config/plant_locations.yaml" command="load" ns="manager_node" />
+    <rosparam file="$(find smart_robot)/config/navigator_params.yaml" command="load" ns="navigator_node" />
 
     <!-- 3. 啟動所有Python節點 -->
     <node pkg="smart_robot" type="moisture_sensor_node.py" name="moisture_sensor_node" output="screen" />

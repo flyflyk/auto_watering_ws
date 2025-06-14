@@ -154,7 +154,7 @@
     <joint name="laser_joint" type="fixed">
         <parent link="base_link"/>
         <child link="laser_link"/>
-        <origin xyz="${chassis_radius} 0 -0.01" rpy="0 0 0"/>
+        <origin xyz="0 0 -0.01" rpy="0 0 0"/>
     </joint>
     <link name="laser_link">
         <visual>
@@ -162,10 +162,10 @@
             <material name="red"><color rgba="1.0 0.0 0.0 1.0"/></material>
         </visual>
         <collision>
-            <geometry><cylinder radius="0.05" length="0.04"/></geometry>
+            <geometry><cylinder radius="0.001" length="0.001"/></geometry>
         </collision>
         <inertial>
-            <mass value="0.1"/>
+            <mass value="0.001"/>
             <xacro:cylinder_inertia m="0.1" r="0.05" h="0.04"/>
         </inertial>
     </link>

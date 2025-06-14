@@ -82,9 +82,10 @@ class NavigatorNode:
         target_pos = goal.target_plant_position
         rospy.loginfo(f"Received goal to move to ({target_pos.x:.2f}, {target_pos.y:.2f})")
         
-        self.current_state = self.STATE_GOAL_SEEKING
-        self.hit_point = None
-        self.min_dist_to_goal = math.sqrt((target_pos.x - self.current_pos.x)**2 + (target_pos.y - self.current_pos.y)**2)
+        # Bug 演算法的相關狀態，暫時用不到
+        # self.current_state = self.STATE_GOAL_SEEKING
+        # self.hit_point = None
+        # self.min_dist_to_goal = math.sqrt((target_pos.x - self.current_pos.x)**2 + (target_pos.y - self.current_pos.y)**2)
 
         rate = rospy.Rate(10)
         feedback = MoveToPlantFeedback()
@@ -97,33 +98,23 @@ class NavigatorNode:
                 break
             
             dist_to_goal = math.sqrt((target_pos.x - self.current_pos.x)**2 + (target_pos.y - self.current_pos.y)**2)
-            rospy.loginfo_throttle(1.0, f"State: {self.current_state}, Dist: {dist_to_goal:.2f}, MinDist: {self.min_dist_to_goal:.2f}, Front: {self.regions['front']:.2f}")
+            rospy.loginfo_throttle(1.0, f"Dist: {dist_to_goal:.2f}, Front: {self.regions['front']:.2f}")
+
             if dist_to_goal < self.goal_tolerance:
                 rospy.loginfo("Goal reached.")
                 result.success = True
                 break
-
-            move_cmd = Twist()
             
-            if self.current_state == self.STATE_GOAL_SEEKING:
-                if self.regions['front'] < self.obstacle_threshold:
-                    rospy.logwarn("Obstacle detected! Switching to WALL_FOLLOWING state.")
-                    self.current_state = self.STATE_WALL_FOLLOWING
-                    self.hit_point = self.current_pos # 記錄遭遇點
-                else:
-                    move_cmd = self.calculate_goal_seeking_cmd(target_pos)
-                    # 在尋的模式下，不斷更新到目標的最小距離
-                    if dist_to_goal < self.min_dist_to_goal:
-                        self.min_dist_to_goal = dist_to_goal
+            # 只要前方沒有障礙物，就一直執行尋的邏輯
+            if self.regions['front'] > self.obstacle_threshold:
+                move_cmd = self.calculate_goal_seeking_cmd(target_pos)
+            else:
+                # 如果遇到障礙物，暫時的策略是：停下
+                rospy.logwarn_throttle(1, "Obstacle detected! Stopping.")
+                move_cmd = Twist() # linear.x = 0, angular.z = 0
 
-            elif self.current_state == self.STATE_WALL_FOLLOWING:
-                if dist_to_goal < self.min_dist_to_goal - 0.1:
-                    rospy.loginfo("Path to goal seems clear. Switching back to GOAL_SEEKING.")
-                    self.current_state = self.STATE_GOAL_SEEKING
-                else:
-                    move_cmd = self.calculate_wall_following_cmd()
-            
             self.cmd_vel_pub.publish(move_cmd)
+
             feedback.current_robot_position = self.current_pos
             self.server.publish_feedback(feedback)
             rate.sleep()
@@ -136,23 +127,19 @@ class NavigatorNode:
         move_cmd = Twist()
         angle_to_goal = math.atan2(target_pos.y - self.current_pos.y, target_pos.x - self.current_pos.x)
         angle_error = self.normalize_angle(angle_to_goal - self.current_yaw)
-        angular_speed = self.angular_p_gain * angle_error
-        angular_speed = max(-self.turn_speed, min(self.turn_speed, angular_speed))
 
-        # 即使角度偏差大，也給一個最小的前進速度，避免完全卡住
-        if abs(angle_error) > math.pi / 2:
-            linear_speed = 0.0
-        elif abs(angle_error) > math.pi / 4:
-            linear_speed = self.slow_forward_speed
+        # 1. 如果角度誤差很大，優先轉彎
+        if abs(angle_error) > 0.35:
+            move_cmd.linear.x = 0.0
+            angular_speed = self.angular_p_gain * angle_error
+            move_cmd.angular.z = max(-self.turn_speed, min(self.turn_speed, angular_speed))
+        # 2. 如果角度基本對準了，就全速前進，並進行微調
         else:
-            scale = 1 - (abs(angle_error) / (math.pi / 4))
-            linear_speed = self.slow_forward_speed + (self.forward_speed - self.slow_forward_speed) * scale
-
-        move_cmd.linear.x = linear_speed
-        move_cmd.angular.z = angular_speed
+            move_cmd.linear.x = self.forward_speed
+            # 繼續使用 P 控制器進行細微的角度調整，而不是完全停止轉向
+            move_cmd.angular.z = self.angular_p_gain * angle_error
         
         return move_cmd
-
     def calculate_wall_following_cmd(self):
         move_cmd = Twist()
         # 1. 如果正前方或右前方太近，說明要撞牆或入彎，必須左轉

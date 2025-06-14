@@ -12,8 +12,8 @@ wall_follow_turn_speed: 0.5
 
 # Wall Follow 
 wall_follow:
-front_dist_trigger: 0.5
-side_dist_target: 0.7
+  front_dist_trigger: 0.5
+  side_dist_target: 0.7
 
 # Angle Control
 angle_tolerance: 0.2

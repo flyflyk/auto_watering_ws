@@ -20,6 +20,20 @@
           <geometry>
             <box><size>5 4 0.02</size></box>
           </geometry>
+          <surface>
+            <friction>
+              <ode>
+                <mu>1.0</mu>
+                <mu2>1.0</mu2>
+              </ode>
+            </friction>
+            <contact>
+              <ode>
+                <kp>1e+13</kp>
+                <kd>1</kd>
+              </ode>
+            </contact>
+          </surface>
           <material>
             <script>
               <uri>file://media/materials/scripts/gazebo.material</uri>

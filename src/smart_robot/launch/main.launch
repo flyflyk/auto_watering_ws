@@ -38,6 +38,7 @@
     </node>
 
     <!-- 5. 啟動 move_base 導航核心 -->
+    <rosparam command="delete" param="/move_base" />
     <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
         <!-- 載入所有設定檔 -->
         <rosparam file="$(find smart_robot)/config/costmap_common.yaml" command="load" ns="global_costmap" />

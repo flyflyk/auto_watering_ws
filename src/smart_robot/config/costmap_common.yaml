@@ -1,16 +1,16 @@
-robot_radius: 0.18 # 假設機器人是圓形的，半徑為18cm，比實際 chassis_radius (15cm) 稍大
+robot_radius: 0.17 
 
-# 障礙物膨脹層
+# 膨脹層設定
 inflation_layer:
   enabled: true
-  cost_scaling_factor: 5.0  # 膨脹代價的縮放因子，值越大，離障礙物越遠
-  inflation_radius: 0.4   # 膨脹半徑 (米)，讓機器人與障礙物保持安全距離
+  cost_scaling_factor: 3.0
+  inflation_radius: 0.02
 
-# 障礙物層
+# 障礙物層設定
 obstacle_layer:
   enabled: true
-  obstacle_range: 2.5 # 探測多遠的障礙物
-  raytrace_range: 3.0 # 清除多遠的障礙物
+  obstacle_range: 2.5
+  raytrace_range: 3.0
   observation_sources: laser_scan_sensor
   laser_scan_sensor:
     sensor_frame: laser_link

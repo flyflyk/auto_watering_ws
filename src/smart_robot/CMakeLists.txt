@@ -10,17 +10,53 @@ project(smart_robot)
 find_package(catkin REQUIRED COMPONENTS
   actionlib
   actionlib_msgs
+  amcl
   gazebo_ros
   geometry_msgs
-  message_generation
-  message_runtime
+  gmapping
+  map_server
+  move_base
+  move_base_msgs
   nav_msgs
   rospy
   sensor_msgs
   std_msgs
   std_srvs
   tf
+  xacro
 )
+
+## 生成訊息
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+)
+
+## 服務
+add_service_files(
+  FILES
+  GetMoisture.srv
+)
+
+## 安裝 Python 腳本
+catkin_install_python(PROGRAMS
+  scripts/manager_node.py
+  scripts/moisture_sensor_node.py
+  scripts/pump_driver_node.py
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+## 安裝 Launch 和其他檔案
+install(DIRECTORY
+  launch/
+  urdf/
+  config/
+  worlds/
+  maps/
+  srv/
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
+)
+
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -79,7 +115,7 @@ find_package(catkin REQUIRED COMPONENTS
 ## Generate added messages and services with any dependencies listed here
 # generate_messages(
 #   DEPENDENCIES
-#   actionlib_msgs#   geometry_msgs#   nav_msgs#   sensor_msgs#   std_msgs
+#   actionlib_msgs#   geometry_msgs#   move_base_msgs#   nav_msgs#   sensor_msgs#   std_msgs
 # )
 
 ################################################
@@ -102,39 +138,6 @@ find_package(catkin REQUIRED COMPONENTS
 #   cfg/DynReconf2.cfg
 # )
 
-add_service_files(
-  FILES
-  GetMoisture.srv
-)
-
-add_action_files(
-  DIRECTORY action
-  FILES MoveToPlant.action
-)
-
-generate_messages(
-  DEPENDENCIES
-    actionlib_msgs
-    geometry_msgs
-    std_msgs
-)
-
-catkin_install_python(PROGRAMS
-  scripts/manager_node.py
-  scripts/navigator_node.py
-  scripts/pump_driver_node.py
-  scripts/moisture_sensor_node.py
-  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)
-
-install(DIRECTORY launch urdf worlds config
-  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
-)
-
-install(DIRECTORY srv
-    DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/srv
-)
-
 ###################################
 ## catkin specific configuration ##
 ###################################
@@ -146,8 +149,8 @@ install(DIRECTORY srv
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES smart_robot
-#  CATKIN_DEPENDS actionlib actionlib_msgs gazebo_ros geometry_msgs message_generation message_runtime nav_msgs rospy sensor_msgs std_msgs std_srvs tf
+#  LIBRARIES smart_robot_pkg
+#  CATKIN_DEPENDS actionlib actionlib_msgs amcl gazebo_ros geometry_msgs gmapping map_server move_base move_base_msgs nav_msgs rospy sensor_msgs std_msgs std_srvs tf xacro
 #  DEPENDS system_lib
 )
 
@@ -164,7 +167,7 @@ include_directories(
 
 ## Declare a C++ library
 # add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/smart_robot.cpp
+#   src/${PROJECT_NAME}/smart_robot_pkg.cpp
 # )
 
 ## Add cmake target dependencies of the library
@@ -175,7 +178,7 @@ include_directories(
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-# add_executable(${PROJECT_NAME}_node src/smart_robot_node.cpp)
+# add_executable(${PROJECT_NAME}_node src/smart_robot_pkg_node.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -239,7 +242,7 @@ include_directories(
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_smart_robot.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_smart_robot_pkg.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()

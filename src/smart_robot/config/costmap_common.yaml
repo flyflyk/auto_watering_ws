@@ -4,7 +4,7 @@ robot_radius: 0.17
 inflation_layer:
   enabled: true
   cost_scaling_factor: 10.0
-  inflation_radius: 0.001
+  inflation_radius: 0.25
 
 # 障礙物層設定
 obstacle_layer:

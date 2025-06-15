@@ -1,8 +1,7 @@
 # Behavior
-goal_tolerance: 0.25
+goal_tolerance: 0.7
 obstacle_threshold: 0.6
 path_clear_threshold: 1.0
-final_approach_dist: 0.5
 
 # Speed Control
 forward_speed: 0.5 

@@ -7,7 +7,7 @@ import math
 from geometry_msgs.msg import Twist, Point
 from sensor_msgs.msg import LaserScan
 from nav_msgs.msg import Odometry
-from smart_robot.msg import MoveToPlantAction, MoveToPlantResult, MoveToPlantFeedback
+from smart_robot.msg import MoveToPlantAction, MoveToPlantResult
 from tf.transformations import euler_from_quaternion
 
 class NavigatorNode:
@@ -106,15 +106,7 @@ class NavigatorNode:
                 result.success = True
                 break
 
-            # 優先級 2: 檢查是否進入「最終接近」模式
-            # 條件：離目標很近 (例如 < 0.5m)
-            if dist_to_goal < final_approach_dist:
-                rospy.loginfo_throttle(1.0, "Final approach mode: Moving straight to goal, ignoring obstacles.")
-                # 在最終接近時，我們只執行尋的邏輯，並且不切換到沿牆模式
-                # 這等於是信任我們的路徑，直接開過去
-                move_cmd = self.calculate_goal_seeking_cmd(target_pos)
-
-            # 優先級 3: 常規的尋的/沿牆邏輯
+            # 優先級 2: 常規的尋的/沿牆邏輯
             else:
                 if self.current_state == self.STATE_GOAL_SEEKING:
                     if self.regions['front'] < self.obstacle_threshold:

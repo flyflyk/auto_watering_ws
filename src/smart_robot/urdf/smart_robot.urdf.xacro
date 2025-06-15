@@ -71,6 +71,13 @@
             <origin xyz="0 0 0" rpy="${PI/2} 0 0"/>
             <xacro:wheel_inertia m="${wheel_mass}" r="${wheel_radius}" h="${wheel_length}"/>
         </inertial>
+        <gazebo reference="right_wheel_link">
+            <mu1>1.0</mu1>
+            <mu2>1.0</mu2>
+            <kp>1000000.0</kp>
+            <kd>100.0</kd>
+            <material>Gazebo/Black</material>
+        </gazebo>
     </link>
 
     <!-- LEFT WHEEL: Placed on the +Y axis -->
@@ -95,6 +102,13 @@
             <origin xyz="0 0 0" rpy="${PI/2} 0 0"/>
             <xacro:wheel_inertia m="${wheel_mass}" r="${wheel_radius}" h="${wheel_length}"/>
         </inertial>
+        <gazebo reference="right_wheel_link">
+            <mu1>1.0</mu1>
+            <mu2>1.0</mu2>
+            <kp>1000000.0</kp>
+            <kd>100.0</kd>
+            <material>Gazebo/Black</material>
+        </gazebo>
     </link>
 
     <!-- Caster Wheels -->
@@ -107,6 +121,13 @@
         <visual><geometry><sphere radius="${wheel_radius*0.5}"/></geometry><material name="grey"><color rgba="0.5 0.5 0.5 1.0"/></material></visual>
         <collision><geometry><sphere radius="${wheel_radius*0.5}"/></geometry></collision>
         <inertial><mass value="${caster_mass}"/><xacro:sphere_inertia m="${caster_mass}" r="${wheel_radius*0.5}"/></inertial>
+        <gazebo reference="caster_wheel_front_link">
+            <mu1>0.05</mu1>
+            <mu2>0.05</mu2>
+            <kp>1000000.0</kp>
+            <kd>100.0</kd>
+            <material>Gazebo/Grey</material>
+        </gazebo>
     </link>
 
     <joint name="caster_wheel_rear_joint" type="fixed">
@@ -152,6 +173,8 @@
             <robotBaseFrame>base_footprint</robotBaseFrame>
             <publishOdomTF>true</publishOdomTF>
             <odometrySource>world</odometrySource> 
+            <leftJointPID>10.0 0.0 0.0</leftJointPID>
+            <rightJointPID>10.0 0.0 0.0</rightJointPID>
             
             <!-- These are optional but good to have -->
             <publishWheelTF>false</publishWheelTF>

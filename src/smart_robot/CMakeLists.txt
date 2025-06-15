@@ -26,16 +26,16 @@ find_package(catkin REQUIRED COMPONENTS
   xacro
 )
 
-## 生成訊息
-generate_messages(
-  DEPENDENCIES
-  std_msgs
-)
-
 ## 服務
 add_service_files(
   FILES
   GetMoisture.srv
+)
+
+## 生成訊息
+generate_messages(
+  DEPENDENCIES
+  std_msgs
 )
 
 ## 安裝 Python 腳本

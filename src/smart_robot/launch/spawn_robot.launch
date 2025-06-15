@@ -1,28 +1,10 @@
 <launch>
-    <!-- 指定世界檔案的路徑 -->
-    <arg name="world_file" default="$(find smart_robot)/worlds/garden.world"/>
-    
-    <!-- 啟動 Gazebo 伺服器與客戶端 -->
-    <include file="$(find gazebo_ros)/launch/empty_world.launch">
-        <arg name="world_name" value="$(arg world_file)"/>
-        <arg name="paused" value="false"/>
-        <arg name="use_sim_time" value="true"/>
-        <arg name="gui" value="true"/>
-        <arg name="headless" value="false"/>
-        <arg name="debug" value="false"/>
-    </include>
-
-    <!-- 載入機器人模型 URDF 到參數伺服器 -->
+    <!-- 1. 將 URDF 檔案載入到參數伺服器 -->
     <param name="robot_description" command="$(find xacro)/xacro $(find smart_robot)/urdf/smart_robot.urdf.xacro" />
-
-    <!-- 在 Gazebo 中生成機器人模型 -->
-    <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" 
-    args="-param robot_description -urdf -model smart_bot 
-            -x 0.5   
-            -y 0.0
-            -z 0.05" />
-
-    <!-- 啟動 robot_state_publisher，發布機器人的 tf 轉換 -->
+  
+    <!-- 2. 在 Gazebo 中生成機器人模型 -->
+    <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-param robot_description -urdf -model smart_robot" />
+  
+    <!-- 3. 啟動 robot_state_publisher，發布 TF 轉換 -->
     <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
-
 </launch>

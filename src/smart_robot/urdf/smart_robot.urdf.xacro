@@ -20,7 +20,11 @@
     <!-- ================== ROBOT LINKS AND JOINTS ================== -->
     <link name="base_footprint"/>
 
-    <joint name="base_joint" type="fixed"><parent link="base_footprint"/><child link="base_link"/><origin xyz="0 0 ${chassis_height/2 + 0.01}" rpy="0 0 0"/></joint>
+    <joint name="base_joint" type="fixed">
+        <parent link="base_footprint"/>
+        <child link="base_link"/>
+        <origin xyz="0 0 ${chassis_height/2 + 0.01}" rpy="0 0 -${PI/2}"/>
+    </joint>
     <link name="base_link">
         <visual><geometry><cylinder radius="${chassis_radius}" length="${chassis_height}"/></geometry><material name="blue"><color rgba="0.2 0.2 1.0 1.0"/></material></visual>
         <collision><geometry><cylinder radius="${chassis_radius}" length="${chassis_height}"/></geometry></collision>
@@ -32,7 +36,7 @@
         <parent link="base_link"/>
         <child link="right_wheel_link"/>
         <origin xyz="0 -${wheel_separation/2} -0.01" rpy="0 0 0"/>
-        <axis xyz="0 1 0"/> <!-- 旋轉軸沿著 Y 軸 -->
+        <axis xyz="0 1 0"/>
     </joint>
 
     <link name="right_wheel_link">

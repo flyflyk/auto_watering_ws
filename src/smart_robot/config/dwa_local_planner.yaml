@@ -1,29 +1,24 @@
 DWAPlannerROS:
-  # Robot Configuration Parameters - 根據你的機器人調整
+  # Robot Configuration Parameters
   acc_lim_x: 2.0
-  acc_lim_y: 0.0  # 非全向輪設為0
+  acc_lim_y: 0.0
   acc_lim_theta: 2.5
-  
-  max_vel_x: 0.25 # 最大前進速度
-  min_vel_x: 0.05 # 最小前進速度 (重要：如果設為0，機器人可能會卡住)
-
-  max_vel_y: 0.0  # 非全向輪設為0
-  min_vel_y: 0.0
-
-  max_rot_vel: 0.4 # 最大旋轉速度
-  min_rot_vel: 0.1 # 最小旋轉速度
+  max_vel_x: 0.25
+  min_vel_x: 0.05
+  max_vel_theta: 0.4
+  min_vel_theta: 0.1
 
   # Goal Tolerance Parameters
-  yaw_goal_tolerance: 0.17  # 約 10 度
-  xy_goal_tolerance: 0.15   # 15 公分
+  yaw_goal_tolerance: 0.17
+  xy_goal_tolerance: 0.15
   
   # Forward Simulation Parameters
-  sim_time: 1.5      # 模擬未來 1.5 秒的軌跡
+  sim_time: 1.5
   
   # Trajectory Scoring Parameters
-  path_distance_bias: 32.0  # 沿著全域路徑的權重
-  goal_distance_bias: 24.0  # 朝向目標的權重
-  occdist_scale: 0.01       # 躲避障礙物的權重
+  path_distance_bias: 32.0
+  goal_distance_bias: 24.0
+  occdist_scale: 0.01
   
   # Oscillation Prevention Parameters
   oscillation_reset_dist: 0.05

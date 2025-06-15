@@ -9,8 +9,8 @@
         <pose>0 0 0.1 0 0 0</pose>
         <geometry>
           <cylinder>
-            <radius>0.15</radius>
-            <length>0.2</length>
+            <radius>0.3</radius>
+            <length>0.5</length>
           </cylinder>
         </geometry>
         <material>
@@ -35,8 +35,8 @@
         <pose>0 0 0.18 0 0 0</pose>
         <geometry>
           <cylinder>
-            <radius>0.14</radius>
-            <length>0.04</length>
+            <radius>0.27</radius>
+            <length>0.2</length>
           </cylinder>
         </geometry>
         <material>

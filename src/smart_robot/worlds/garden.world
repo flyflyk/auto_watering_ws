@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <sdf version="1.6">
-  <world name="garden_world_v2">
+  <world name="large_garden_world">
     <!-- 光源 -->
     <include>
       <uri>model://sun</uri>
@@ -17,71 +17,94 @@
       <pose>0 0 0.5 0 0 0</pose>
       <link name="walls">
         <!-- North Wall -->
-        <visual name="visual_north"><pose>0 5 0 0 0 0</pose><geometry><box><size>10 0.2 1</size></box></geometry></visual>
-        <collision name="collision_north"><pose>0 5 0 0 0 0</pose><geometry><box><size>10 0.2 1</size></box></geometry></collision>
+        <visual name="visual_north"><pose>0 10 0 0 0 0</pose><geometry><box><size>20 0.2 1</size></box></geometry></visual>
+        <collision name="collision_north"><pose>0 10 0 0 0 0</pose><geometry><box><size>20 0.2 1</size></box></geometry></collision>
         <!-- South Wall -->
-        <visual name="visual_south"><pose>0 -5 0 0 0 0</pose><geometry><box><size>10 0.2 1</size></box></geometry></visual>
-        <collision name="collision_south"><pose>0 -5 0 0 0 0</pose><geometry><box><size>10 0.2 1</size></box></geometry></collision>
+        <visual name="visual_south"><pose>0 -10 0 0 0 0</pose><geometry><box><size>20 0.2 1</size></box></geometry></visual>
+        <collision name="collision_south"><pose>0 -10 0 0 0 0</pose><geometry><box><size>20 0.2 1</size></box></geometry></collision>
         <!-- East Wall -->
-        <visual name="visual_east"><pose>5 0 0 0 0 0</pose><geometry><box><size>0.2 10 1</size></box></geometry></visual>
-        <collision name="collision_east"><pose>5 0 0 0 0 0</pose><geometry><box><size>0.2 10 1</size></box></geometry></collision>
+        <visual name="visual_east"><pose>10 0 0 0 0 0</pose><geometry><box><size>0.2 20 1</size></box></geometry></visual>
+        <collision name="collision_east"><pose>10 0 0 0 0 0</pose><geometry><box><size>0.2 20 1</size></box></geometry></collision>
         <!-- West Wall -->
-        <visual name="visual_west"><pose>-5 0 0 0 0 0</pose><geometry><box><size>0.2 10 1</size></box></geometry></visual>
-        <collision name="collision_west"><pose>-5 0 0 0 0 0</pose><geometry><box><size>0.2 10 1</size></box></geometry></collision>
+        <visual name="visual_west"><pose>-10 0 0 0 0 0</pose><geometry><box><size>0.2 20 1</size></box></geometry></visual>
+        <collision name="collision_west"><pose>-10 0 0 0 0 0</pose><geometry><box><size>0.2 20 1</size></box></geometry></collision>
       </link>
     </model>
 
     <!-- ================== 內部障礙物 ================== -->
-    <!-- 一個 L 形的障礙牆，製造通道 -->
-    <model name="l_shaped_wall">
+
+    <!-- 1. 中央迷宮式牆體 -->
+    <model name="central_maze">
       <static>true</static>
-      <link name="l_link">
-        <pose>-1 -2 0.5 0 0 0</pose>
-        <visual name="visual_1"><pose>0 1 0 0 0 0</pose><geometry><box><size>4 0.2 1</size></box></geometry></visual>
-        <collision name="collision_1"><pose>0 1 0 0 0 0</pose><geometry><box><size>4 0.2 1</size></box></geometry></collision>
-        <visual name="visual_2"><pose>-1.9 -1 0 0 0 0</pose><geometry><box><size>0.2 4 1</size></box></geometry></visual>
-        <collision name="collision_2"><pose>-1.9 -1 0 0 0 0</pose><geometry><box><size>0.2 4 1</size></box></geometry></collision>
+      <link name="maze_link">
+        <!-- 長橫牆 -->
+        <pose>-2 2 0.5 0 0 0</pose>
+        <visual name="h_wall_visual"><geometry><box><size>12 0.2 1</size></box></geometry></visual>
+        <collision name="h_wall_collision"><geometry><box><size>12 0.2 1</size></box></geometry></collision>
+        <!-- 短豎牆 1 (製造入口) -->
+        <pose>4 -3 0.5 0 0 0</pose>
+        <visual name="v_wall_1_visual"><geometry><box><size>0.2 10 1</size></box></geometry></visual>
+        <collision name="v_wall_1_collision"><geometry><box><size>0.2 10 1</size></box></geometry></collision>
+        <!-- 短豎牆 2 (製造通道) -->
+        <pose>-4 -5 0.5 0 0 0</pose>
+        <visual name="v_wall_2_visual"><geometry><box><size>0.2 6 1</size></box></geometry></visual>
+        <collision name="v_wall_2_collision"><geometry><box><size>0.2 6 1</size></box></geometry></collision>
       </link>
     </model>
-    
-    <!-- 圓柱障礙物 -->
-    <model name="cylinder_obstacle">
+
+    <!-- 2. 模擬梁柱的細圓柱陣列 -->
+    <model name="pillar_1">
         <static>true</static>
-        <pose>2 2 0.5 0 0 0</pose>
-        <link name="link">
-            <visual name="visual"><geometry><cylinder><radius>0.5</radius><length>1.0</length></cylinder></geometry></visual>
-            <collision name="collision"><geometry><cylinder><radius>0.5</radius><length>1.0</length></cylinder></geometry></collision>
-        </link>
+        <pose>-7 7 0.5 0 0 0</pose>
+        <link name="link"><visual name="v"><geometry><cylinder><radius>0.15</radius><length>1.0</length></cylinder></geometry></visual><collision name="c"><geometry><cylinder><radius>0.15</radius><length>1.0</length></cylinder></geometry></collision></link>
+    </model>
+    <model name="pillar_2">
+        <static>true</static>
+        <pose>-7 4 0.5 0 0 0</pose>
+        <link name="link"><visual name="v"><geometry><cylinder><radius>0.15</radius><length>1.0</length></cylinder></geometry></visual><collision name="c"><geometry><cylinder><radius>0.15</radius><length>1.0</length></cylinder></geometry></collision></link>
+    </model>
+    <model name="pillar_3">
+        <static>true</static>
+        <pose>7 8 0.5 0 0 0</pose>
+        <link name="link"><visual name="v"><geometry><cylinder><radius>0.15</radius><length>1.0</length></cylinder></geometry></visual><collision name="c"><geometry><cylinder><radius>0.15</radius><length>1.0</length></cylinder></geometry></collision></link>
+    </model>
+    <model name="pillar_4">
+        <static>true</static>
+        <pose>1.5 -6 0.5 0 0 0</pose>
+        <link name="link"><visual name="v"><geometry><cylinder><radius>0.15</radius><length>1.0</length></cylinder></geometry></visual><collision name="c"><geometry><cylinder><radius>0.15</radius><length>1.0</length></cylinder></geometry></collision></link>
     </model>
 
-    <!-- ================== 放置我們的自訂盆栽 ================== -->
-    <!-- 確保 Gazebo 能找到你的模型路徑。你可能需要設置 GAZEBO_MODEL_PATH 環境變數 -->
-    <!-- export GAZEBO_MODEL_PATH=$GAZEBO_MODEL_PATH:~/auto_watering_ws/src/smart_robot/models -->
+    <!-- ================== 盆栽 ================== -->
     <include>
       <uri>model://pot</uri>
       <name>plant_target_1</name>
-      <pose>4 4 0 0 0 0</pose>
+      <pose>8 4 0 0 0 0</pose>
     </include>
     <include>
       <uri>model://pot</uri>
       <name>plant_target_2</name>
-      <pose>4 -4 0 0 0 0</pose>
+      <pose>8 -8 0 0 0 0</pose>
     </include>
     <include>
       <uri>model://pot</uri>
       <name>plant_target_3</name>
-      <pose>0 -3 0 0 0 0</pose>
+      <pose>-8 -8 0 0 0 0</pose>
     </include>
     <include>
       <uri>model://pot</uri>
       <name>plant_target_4</name>
-      <pose>-4 3 0 0 0 0</pose>
+      <pose>-8 0 0 0 0 0</pose>
+    </include>
+     <include>
+      <uri>model://pot</uri>
+      <name>plant_target_5</name>
+      <pose>0 6 0 0 0 0</pose>
     </include>
 
     <!-- 充電站 -->
     <model name='charging_station_marker'>
       <static>true</static>
-      <pose>0 0 0.01 0 0 0</pose> 
+      <pose>-8 8 0.01 0 0 0</pose> 
       <link name='marker_link'>
         <visual name='visual_marker'>
           <geometry><cylinder><radius>0.3</radius><length>0.02</length></cylinder></geometry>

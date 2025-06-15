@@ -1,213 +1,278 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="smart_robot">
 
-    <!-- ================== CONSTANTS ================== -->
+    <!-- ================== CONSTANTS & MACROS ================== -->
     <xacro:property name="PI" value="3.1415926535897931"/>
-    <xacro:property name="chassis_mass" value="1.0"/>
-    <xacro:property name="wheel_mass" value="0.1"/>
-    <xacro:property name="caster_mass" value="0.05"/>
-    <xacro:property name="chassis_radius" value="0.15"/>
-    <xacro:property name="chassis_height" value="0.1"/>
-    <xacro:property name="wheel_radius" value="0.05"/>
-    <xacro:property name="wheel_length" value="0.04"/>
-    <xacro:property name="wheel_separation" value="0.35"/>
 
-    <!-- ================== INERTIA MACROS ================== -->
-    <xacro:macro name="solid_cylinder_inertia" params="m r h"><inertia ixx="${m*(3*r*r+h*h)/12}" ixy="0" ixz="0" iyy="${m*(3*r*r+h*h)/12}" iyz="0" izz="${m*r*r/2}"/></xacro:macro>
-    <xacro:macro name="sphere_inertia" params="m r"><inertia ixx="${2*m*r*r/5}" ixy="0" ixz="0" iyy="${2*m*r*r/5}" iyz="0" izz="${2*m*r*r/5}"/></xacro:macro>
-    
-    <xacro:macro name="wheel_inertia" params="m r h">
-      <inertia ixx="${(m/12.0)*(3*r*r + h*h)}" ixy="0.0" ixz="0.0"
-               iyy="${(m/2.0)*(r*r)}" iyz="0.0"
-               izz="${(m/12.0)*(3*r*r + h*h)}"/>
+    <!-- 慣性矩陣宏 -->
+    <xacro:macro name="box_inertia" params="m x y z">
+        <inertia ixx="${m*(y*y+z*z)/12}" ixy="0" ixz="0" iyy="${m*(x*x+z*z)/12}" iyz="0" izz="${m*(x*x+y*y)/12}"/>
     </xacro:macro>
-
-    <!-- ================== ROBOT LINKS AND JOINTS ================== -->
+    <xacro:macro name="cylinder_inertia" params="m r h">
+        <inertia ixx="${m*(3*r*r+h*h)/12}" ixy="0" ixz="0" iyy="${m*(3*r*r+h*h)/12}" iyz="0" izz="${m*r*r/2}"/>
+    </xacro:macro>
+    <xacro:macro name="sphere_inertia" params="m r">
+        <inertia ixx="${2*m*r*r/5}" ixy="0" ixz="0" iyy="${2*m*r*r/5}" iyz="0" izz="${2*m*r*r/5}"/>
+    </xacro:macro>
     
-    <!-- Base Footprint: The 2D projection on the ground -->
-    <link name="base_footprint"/>
+    <!-- ================== MATERIALS ================== -->
+    <material name="blue">
+        <color rgba="0 0 0.8 1"/>
+    </material>
+    <material name="black">
+        <color rgba="0 0 0 1"/>
+    </material>
+    <material name="white">
+        <color rgba="1 1 1 1"/>
+    </material>
+    <material name="green">
+        <color rgba="0.1 0.8 0.1 1"/>
+    </material>
 
-    <joint name="base_joint" type="fixed">
+    <!-- ================== ROBOT STRUCTURE ================== -->
+
+    <!-- Base Link (車身主體) -->
+    <!-- 為了讓 TF 樹更標準，我們增加一個 base_footprint -->
+    <link name="base_footprint"/>
+    <joint name="base_footprint_joint" type="fixed">
         <parent link="base_footprint"/>
         <child link="base_link"/>
-        <origin xyz="0 0 ${wheel_radius + 0.01 + chassis_height/2}" rpy="0 0 0"/>
+        <origin xyz="0 0 0.4" rpy="0 0 0"/> <!-- 將 base_link 的中心抬高 40cm -->
     </joint>
+
     <link name="base_link">
         <visual>
-            <geometry><cylinder radius="${chassis_radius}" length="${chassis_height}"/></geometry>
-            <origin xyz="0 0 0" rpy="0 0 0" />
-            <material name="blue"><color rgba="0.2 0.2 1.0 1.0"/></material>
+            <geometry><cylinder length="0.6" radius="0.2"/></geometry>
+            <material name="blue"/>
         </visual>
         <collision>
-            <geometry><cylinder radius="${chassis_radius}" length="${chassis_height}"/></geometry>
-            <origin xyz="0 0 0" rpy="0 0 0" />
+            <geometry><cylinder length="0.6" radius="0.2"/></geometry>
         </collision>
         <inertial>
-            <mass value="${chassis_mass}"/>
-            <origin xyz="0 0 0"/>
-            <xacro:solid_cylinder_inertia m="${chassis_mass}" r="${chassis_radius}" h="${chassis_height}"/>
+            <mass value="5.0"/> <!-- 給一個較重的質量 -->
+            <xacro:cylinder_inertia m="5.0" r="0.2" h="0.6"/>
         </inertial>
     </link>
 
-    <!-- RIGHT WHEEL: Placed on the -Y axis -->
-    <joint name="right_wheel_joint" type="continuous">
-        <parent link="base_link"/>
-        <child link="right_wheel_link"/>
-        <origin xyz="0 -${wheel_separation/2} -${0.01 + chassis_height/2}" rpy="0 0 0"/>
-        <axis xyz="0 1 0"/>
-        <dynamics damping="0.1"/>
-    </joint>
-    <link name="right_wheel_link">
+    <!-- Head -->
+    <link name="head">
         <visual>
-            <origin xyz="0 0 0" rpy="${PI/2} 0 0"/>
-            <geometry><cylinder radius="${wheel_radius}" length="${wheel_length}"/></geometry>
-            <material name="black"><color rgba="0.1 0.1 0.1 1.0"/></material>
+            <geometry><sphere radius="0.2"/></geometry>
+            <material name="white"/>
         </visual>
         <collision>
-            <origin xyz="0 0 0" rpy="${PI/2} 0 0"/>
-            <geometry><cylinder radius="${wheel_radius}" length="${wheel_length}"/></geometry>
+            <geometry><sphere radius="0.2"/></geometry>
         </collision>
         <inertial>
-            <mass value="${wheel_mass}"/>
-            <origin xyz="0 0 0" rpy="${PI/2} 0 0"/>
-            <xacro:wheel_inertia m="${wheel_mass}" r="${wheel_radius}" h="${wheel_length}"/>
+            <mass value="1.0"/>
+            <xacro:sphere_inertia m="1.0" r="0.2"/>
         </inertial>
-        <gazebo reference="right_wheel_link">
-            <mu1>1.0</mu1>
-            <mu2>1.0</mu2>
-            <kp>1000000.0</kp>
-            <kd>100.0</kd>
-            <material>Gazebo/Black</material>
-        </gazebo>
     </link>
-
-    <!-- LEFT WHEEL: Placed on the +Y axis -->
-    <joint name="left_wheel_joint" type="continuous">
+    <joint name="head_swivel" type="fixed">
         <parent link="base_link"/>
-        <child link="left_wheel_link"/>
-        <origin xyz="0 ${wheel_separation/2} -${0.01 + chassis_height/2}" rpy="0 0 0"/>
-        <axis xyz="0 1 0"/>
-        <dynamics damping="0.1"/>
+        <child link="head"/>
+        <origin xyz="0 0 0.3"/>
     </joint>
-    <link name="left_wheel_link">
+
+    <!-- Legs and Wheels -->
+    <!-- Right Side -->
+    <link name="right_leg">
         <visual>
-            <origin xyz="0 0 0" rpy="${PI/2} 0 0"/>
-            <geometry><cylinder radius="${wheel_radius}" length="${wheel_length}"/></geometry>
+            <geometry><box size="0.6 0.1 0.2"/></geometry>
+            <origin rpy="0 1.57075 0" xyz="0 0 -0.3"/>
+            <material name="white"/>
+        </visual>
+        <collision>
+            <geometry><box size="0.6 0.1 0.2"/></geometry>
+            <origin rpy="0 1.57075 0" xyz="0 0 -0.3"/>
+        </collision>
+        <inertial>
+            <mass value="1.5"/>
+            <xacro:box_inertia m="1.5" x="0.2" y="0.1" z="0.6"/>
+        </inertial>
+    </link>
+    <joint name="base_to_right_leg" type="fixed">
+        <parent link="base_link"/>
+        <child link="right_leg"/>
+        <origin xyz="0 -0.22 0.25"/>
+    </joint>
+
+    <link name="right_base">
+        <visual>
+            <geometry><box size="0.4 0.1 0.1"/></geometry>
+            <material name="white"/>
+        </visual>
+        <collision>
+            <geometry><box size="0.4 0.1 0.1"/></geometry>
+        </collision>
+        <inertial>
+            <mass value="1.0"/>
+            <xacro:box_inertia m="1.0" x="0.4" y="0.1" z="0.1"/>
+        </inertial>
+    </link>
+    <joint name="right_base_joint" type="fixed">
+        <parent link="right_leg"/>
+        <child link="right_base"/>
+        <origin xyz="0 0 -0.6"/>
+    </joint>
+
+    <link name="right_front_wheel">
+        <visual>
+            <origin rpy="1.57075 0 0" xyz="0 0 0"/>
+            <geometry><cylinder length="0.1" radius="0.035"/></geometry>
             <material name="black"/>
         </visual>
         <collision>
-            <origin xyz="0 0 0" rpy="${PI/2} 0 0"/>
-            <geometry><cylinder radius="${wheel_radius}" length="${wheel_length}"/></geometry>
+            <origin rpy="1.57075 0 0" xyz="0 0 0"/>
+            <geometry><cylinder length="0.1" radius="0.035"/></geometry>
         </collision>
         <inertial>
-            <mass value="${wheel_mass}"/>
-            <origin xyz="0 0 0" rpy="${PI/2} 0 0"/>
-            <xacro:wheel_inertia m="${wheel_mass}" r="${wheel_radius}" h="${wheel_length}"/>
+            <mass value="0.2"/>
+            <xacro:cylinder_inertia m="0.2" r="0.035" h="0.1"/>
         </inertial>
-        <gazebo reference="right_wheel_link">
-            <mu1>1.0</mu1>
-            <mu2>1.0</mu2>
-            <kp>1000000.0</kp>
-            <kd>100.0</kd>
-            <material>Gazebo/Black</material>
-        </gazebo>
     </link>
-
-    <!-- Caster Wheels -->
-    <joint name="caster_wheel_front_joint" type="fixed">
-        <parent link="base_link"/>
-        <child link="caster_wheel_front_link"/>
-        <origin xyz="${chassis_radius*0.8} 0 -${wheel_radius + 0.01 + chassis_height/2 - caster_radius}" rpy="0 0 0"/>
+    <!-- ****** 關鍵修改: 關節類型改為 continuous ****** -->
+    <joint name="right_front_wheel_joint" type="continuous">
+        <parent link="right_base"/>
+        <child link="right_front_wheel"/>
+        <origin rpy="0 0 0" xyz="0.133333 0 -0.085"/>
+        <axis xyz="0 1 0"/>
     </joint>
-    <link name="caster_wheel_front_link">
-        <visual><geometry><sphere radius="${caster_radius}"/></geometry><material name="grey"><color rgba="0.5 0.5 0.5 1.0"/></material></visual>
-        <collision><geometry><sphere radius="${caster_radius}"/></geometry></collision>
-        <inertial><mass value="${caster_mass}"/><xacro:sphere_inertia m="${caster_mass}" r="${caster_radius}"/></inertial>
-        <gazebo reference="caster_wheel_front_link">
-            <mu1>0.05</mu1> <mu2>0.05</mu2> <material>Gazebo/Grey</material>
-        </gazebo>
-    </link>
 
-    <joint name="caster_wheel_rear_joint" type="fixed">
-        <parent link="base_link"/>
-        <child link="caster_wheel_rear_link"/>
-        <origin xyz="-${chassis_radius*0.8} 0 -${wheel_radius + 0.01 + chassis_height/2 - caster_radius}" rpy="0 0 0"/>
+    <link name="right_back_wheel">
+        <visual>
+            <origin rpy="1.57075 0 0" xyz="0 0 0"/>
+            <geometry><cylinder length="0.1" radius="0.035"/></geometry>
+            <material name="black"/>
+        </visual>
+        <collision>
+            <origin rpy="1.57075 0 0" xyz="0 0 0"/>
+            <geometry><cylinder length="0.1" radius="0.035"/></geometry>
+        </collision>
+        <inertial>
+            <mass value="0.2"/>
+            <xacro:cylinder_inertia m="0.2" r="0.035" h="0.1"/>
+        </inertial>
+    </link>
+    <joint name="right_back_wheel_joint" type="continuous">
+        <parent link="right_base"/>
+        <child link="right_back_wheel"/>
+        <origin rpy="0 0 0" xyz="-0.133333 0 -0.085"/>
+        <axis xyz="0 1 0"/>
     </joint>
-    <link name="caster_wheel_rear_link">
-        <visual><geometry><sphere radius="${caster_radius}"/></geometry><material name="grey"/></visual>
-        <collision><geometry><sphere radius="${caster_radius}"/></geometry></collision>
-        <inertial><mass value="${caster_mass}"/><xacro:sphere_inertia m="${caster_mass}" r="${caster_radius}"/></inertial>
-        <gazebo reference="caster_wheel_rear_link">
-            <mu1>0.05</mu1> <mu2>0.05</mu2> <material>Gazebo/Grey</material>
-        </gazebo>
-    </link>
 
-    <!-- Laser Scanner -->
-    <joint name="laser_joint" type="fixed">
+    <!-- Left Side (結構與右側對稱) -->
+    <link name="left_leg">
+        <visual><geometry><box size="0.6 0.1 0.2"/></geometry><origin rpy="0 1.57075 0" xyz="0 0 -0.3"/><material name="white"/></visual>
+        <collision><geometry><box size="0.6 0.1 0.2"/></geometry><origin rpy="0 1.57075 0" xyz="0 0 -0.3"/></collision>
+        <inertial><mass value="1.5"/><xacro:box_inertia m="1.5" x="0.2" y="0.1" z="0.6"/></inertial>
+    </link>
+    <joint name="base_to_left_leg" type="fixed"><parent link="base_link"/><child link="left_leg"/><origin xyz="0 0.22 0.25"/></joint>
+
+    <link name="left_base">
+        <visual><geometry><box size="0.4 0.1 0.1"/></geometry><material name="white"/></visual>
+        <collision><geometry><box size="0.4 0.1 0.1"/></geometry></collision>
+        <inertial><mass value="1.0"/><xacro:box_inertia m="1.0" x="0.4" y="0.1" z="0.1"/></inertial>
+    </link>
+    <joint name="left_base_joint" type="fixed"><parent link="left_leg"/><child link="left_base"/><origin xyz="0 0 -0.6"/></joint>
+
+    <link name="left_front_wheel">
+        <visual><origin rpy="1.57075 0 0" xyz="0 0 0"/><geometry><cylinder length="0.1" radius="0.035"/></geometry><material name="black"/></visual>
+        <collision><origin rpy="1.57075 0 0" xyz="0 0 0"/><geometry><cylinder length="0.1" radius="0.035"/></geometry></collision>
+        <inertial><mass value="0.2"/><xacro:cylinder_inertia m="0.2" r="0.035" h="0.1"/></inertial>
+    </link>
+    <joint name="left_front_wheel_joint" type="continuous"><parent link="left_base"/><child link="left_front_wheel"/><origin rpy="0 0 0" xyz="0.133333 0 -0.085"/><axis xyz="0 1 0"/></joint>
+
+    <link name="left_back_wheel">
+        <visual><origin rpy="1.57075 0 0" xyz="0 0 0"/><geometry><cylinder length="0.1" radius="0.035"/></geometry><material name="black"/></visual>
+        <collision><origin rpy="1.57075 0 0" xyz="0 0 0"/><geometry><cylinder length="0.1" radius="0.035"/></geometry></collision>
+        <inertial><mass value="0.2"/><xacro:cylinder_inertia m="0.2" r="0.035" h="0.1"/></inertial>
+    </link>
+    <joint name="left_back_wheel_joint" type="continuous"><parent link="left_base"/><child link="left_back_wheel"/><origin rpy="0 0 0" xyz="-0.133333 0 -0.085"/><axis xyz="0 1 0"/></joint>
+
+    <!-- ****** 修改: 將 Gripper 改成 Water Sprayer ****** -->
+    <link name="sprayer_pole">
+        <visual>
+            <geometry><cylinder length="0.2" radius="0.01"/></geometry>
+            <origin rpy="0 1.57075 0" xyz="0.1 0 0"/>
+            <material name="black"/>
+        </visual>
+        <collision><geometry><cylinder length="0.2" radius="0.01"/></geometry><origin rpy="0 1.57075 0" xyz="0.1 0 0"/></collision>
+        <inertial><mass value="0.1"/><xacro:cylinder_inertia m="0.1" r="0.01" h="0.2"/></inertial>
+    </link>
+    <joint name="base_to_sprayer_pole" type="fixed">
+        <parent link="base_link"/>
+        <child link="sprayer_pole"/>
+        <origin rpy="0 0 0" xyz="0.19 0 0.2"/>
+    </joint>
+
+    <link name="sprayer_nozzle">
+        <visual>
+            <geometry><box size="0.04 0.06 0.04"/></geometry>
+            <material name="green"/>
+        </visual>
+        <collision><geometry><box size="0.04 0.06 0.04"/></geometry></collision>
+        <inertial><mass value="0.05"/><xacro:box_inertia m="0.05" x="0.04" y="0.06" z="0.04"/></inertial>
+    </link>
+    <joint name="sprayer_pole_to_nozzle" type="fixed">
+        <parent link="sprayer_pole"/>
+        <child link="sprayer_nozzle"/>
+        <origin xyz="0.22 0 0"/>
+    </joint>
+
+    <!-- ****** 新增: 雷射感測器 ****** -->
+    <link name="laser_link">
+        <visual><geometry><box size="0.05 0.05 0.05"/></geometry><material name="red"><color rgba="1 0 0 1"/></material></visual>
+        <collision><geometry><box size="0.05 0.05 0.05"/></geometry></collision>
+        <inertial><mass value="0.1"/><xacro:box_inertia m="0.1" x="0.05" y="0.05" z="0.05"/></inertial>
+    </link>
+    <joint name="base_to_laser" type="fixed">
         <parent link="base_link"/>
         <child link="laser_link"/>
-        <origin xyz="${chassis_radius*0.9} 0 ${chassis_height/2}" rpy="0 0 0"/>
+        <origin xyz="0.2 0 0"/> <!-- 放在車身前方 -->
     </joint>
-    <link name="laser_link">
-        <visual><geometry><cylinder radius="0.05" length="0.04"/></geometry><material name="red"><color rgba="1.0 0.0 0.0 1.0"/></material></visual>
-        <collision><geometry><cylinder radius="0.05" length="0.04"/></geometry></collision>
-        <inertial><mass value="0.1"/><xacro:solid_cylinder_inertia m="0.1" r="0.05" h="0.04"/></inertial>
-    </link>
+
 
     <!-- ================== GAZEBO PLUGINS ================== -->
 
+    <!-- Differential Drive Plugin - 假設四輪驅動 -->
     <gazebo>
         <plugin name="differential_drive_controller" filename="libgazebo_ros_diff_drive.so">
             <alwaysOn>true</alwaysOn>
             <updateRate>100</updateRate>
             <robotNamespace>/</robotNamespace>
-
-            <leftJoint>left_wheel_joint</leftJoint>
-            <rightJoint>right_wheel_joint</rightJoint>
-
-            <wheelSeparation>${wheel_separation}</wheelSeparation>
-            <wheelDiameter>${2*wheel_radius}</wheelDiameter>
+            <!-- 指定左右兩側的驅動輪關節 -->
+            <leftJoint>left_front_wheel_joint</leftJoint>
+            <leftJoint>left_back_wheel_joint</leftJoint>
+            <rightJoint>right_front_wheel_joint</rightJoint>
+            <rightJoint>right_back_wheel_joint</rightJoint>
+            <wheelSeparation>${2 * 0.22}</wheelSeparation> <!-- 左右腿的距離 -->
+            <wheelDiameter>${2 * 0.035}</wheelDiameter>
             <torque>20</torque>
             <commandTopic>cmd_vel</commandTopic>
             <odometryTopic>odom</odometryTopic>
             <odometryFrame>odom</odometryFrame>
             <robotBaseFrame>base_footprint</robotBaseFrame>
             <publishOdomTF>true</publishOdomTF>
-            <odometrySource>world</odometrySource> 
-            <leftJointPID>10.0 0.0 0.0</leftJointPID>
-            <rightJointPID>10.0 0.0 0.0</rightJointPID>
-            
-            <!-- These are optional but good to have -->
-            <publishWheelTF>false</publishWheelTF>
-            <publishWheelJointState>true</publishWheelJointState>
-            <legacyMode>false</legacyMode>
+            <odometrySource>world</odometrySource>
         </plugin>
     </gazebo>
 
+    <!-- Laser Plugin -->
     <gazebo reference="laser_link">
         <sensor type="ray" name="hokuyo_sensor">
             <pose>0 0 0 0 0 0</pose>
-            <visualize>false</visualize>
+            <visualize>true</visualize>
             <update_rate>20</update_rate>
             <ray>
                 <scan>
                     <horizontal>
-                        <samples>360</samples>
-                        <resolution>1</resolution>
-                        <min_angle>-${PI}</min_angle>
-                        <max_angle>${PI}</max_angle>
+                        <samples>360</samples><resolution>1</resolution>
+                        <min_angle>-3.14</min_angle><max_angle>3.14</max_angle>
                     </horizontal>
                 </scan>
-                <range>
-                    <min>0.10</min>
-                    <max>10.0</max>
-                    <resolution>0.01</resolution>
-                </range>
-                <noise>
-                    <type>gaussian</type>
-                    <mean>0.0</mean>
-                    <stddev>0.01</stddev>
-                </noise>
+                <range><min>0.10</min><max>10.0</max><resolution>0.01</resolution></range>
+                <noise><type>gaussian</type><mean>0.0</mean><stddev>0.01</stddev></noise>
             </ray>
             <plugin name="gazebo_ros_head_hokuyo_controller" filename="libgazebo_ros_laser.so">
                 <topicName>/scan</topicName>

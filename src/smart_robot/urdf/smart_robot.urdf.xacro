@@ -47,8 +47,8 @@
             <geometry><cylinder length="0.6" radius="0.2"/></geometry>
         </collision>
         <inertial>
-            <mass value="5.0"/>
-            <xacro:cylinder_inertia m="5.0" r="0.2" h="0.6"/>
+            <mass value="10.0"/>
+            <xacro:cylinder_inertia m="10.0" r="0.2" h="0.6"/>
         </inertial>
     </link>
 
@@ -132,7 +132,7 @@
     <joint name="right_front_wheel_joint" type="continuous">
         <parent link="right_base"/>
         <child link="right_front_wheel"/>
-        <origin rpy="0 0 0" xyz="0.133333 0 -0.085"/>
+        <origin rpy="0 0 0" xyz="0.18 0 -0.085"/>
         <axis xyz="0 1 0"/>
     </joint>
 
@@ -154,7 +154,7 @@
     <joint name="right_back_wheel_joint" type="continuous">
         <parent link="right_base"/>
         <child link="right_back_wheel"/>
-        <origin rpy="0 0 0" xyz="-0.133333 0 -0.085"/>
+        <origin rpy="0 0 0" xyz="-0.18 0 -0.085"/>
         <axis xyz="0 1 0"/>
     </joint>
 
@@ -178,14 +178,24 @@
         <collision><origin rpy="1.57075 0 0" xyz="0 0 0"/><geometry><cylinder length="0.1" radius="0.035"/></geometry></collision>
         <inertial><mass value="0.2"/><xacro:cylinder_inertia m="0.2" r="0.035" h="0.1"/></inertial>
     </link>
-    <joint name="left_front_wheel_joint" type="continuous"><parent link="left_base"/><child link="left_front_wheel"/><origin rpy="0 0 0" xyz="0.133333 0 -0.085"/><axis xyz="0 1 0"/></joint>
+    <joint name="left_front_wheel_joint" type="continuous">
+        <parent link="left_base"/>
+        <child link="left_front_wheel"/>
+        <origin rpy="0 0 0" xyz="0.18 0 -0.085"/>
+        <axis xyz="0 1 0"/>
+    </joint>
 
     <link name="left_back_wheel">
         <visual><origin rpy="1.57075 0 0" xyz="0 0 0"/><geometry><cylinder length="0.1" radius="0.035"/></geometry><material name="black"/></visual>
         <collision><origin rpy="1.57075 0 0" xyz="0 0 0"/><geometry><cylinder length="0.1" radius="0.035"/></geometry></collision>
         <inertial><mass value="0.2"/><xacro:cylinder_inertia m="0.2" r="0.035" h="0.1"/></inertial>
     </link>
-    <joint name="left_back_wheel_joint" type="continuous"><parent link="left_base"/><child link="left_back_wheel"/><origin rpy="0 0 0" xyz="-0.133333 0 -0.085"/><axis xyz="0 1 0"/></joint>
+    <joint name="left_back_wheel_joint" type="continuous">
+        <parent link="left_base"/>
+        <child link="left_back_wheel"/>
+        <origin rpy="0 0 0" xyz="-0.18 0 -0.085"/>
+        <axis xyz="0 1 0"/>
+    </joint>
 
     <link name="sprayer_pole">
         <visual>

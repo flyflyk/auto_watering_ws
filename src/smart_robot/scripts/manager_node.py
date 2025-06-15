@@ -115,7 +115,9 @@ class ManagerNode:
 if __name__ == '__main__':
     try:
         manager = ManagerNode()
-        rospy.sleep(1)
+        rospy.loginfo("Waiting for AMCL and other nodes to initialize...")
+        rospy.sleep(15.0)
+        
         manager.run_watering_mission()
     except rospy.ROSInterruptException:
         pass

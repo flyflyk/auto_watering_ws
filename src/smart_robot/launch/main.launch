@@ -20,18 +20,15 @@
     <!-- 4. 啟動 AMCL 進行定位 -->
     <!-- AMCL (Adaptive Monte Carlo Localization) 用於在已知地圖中，根據雷射和里程計數據來定位機器人 -->
     <node pkg="amcl" type="amcl" name="amcl" output="screen">
-        <!-- 調整參數以適應你的機器人 -->
         <param name="odom_model_type" value="diff-corrected"/>
         <param name="odom_frame_id" value="odom"/>
         <param name="base_frame_id" value="base_footprint"/>
         <param name="global_frame_id" value="map"/>
         <param name="min_particles" value="500"/>
-        <param name="max_particles" value="3000"/>
+        <param name="max_particles" value="5000"/>
         <param name="update_min_d" value="0.2"/>
         <param name="update_min_a" value="0.2"/>
         <param name="laser_max_beams" value="60"/>
-        <!-- 設置初始位姿，讓 AMCL 知道機器人大約在哪裡 -->
-        <!-- 假設機器人初始在充電站 (0.5, 1.5) -->
         <param name="initial_pose_x" value="0.5"/>
         <param name="initial_pose_y" value="1.5"/>
         <param name="initial_pose_a" value="0.0"/>

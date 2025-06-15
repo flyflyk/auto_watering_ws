@@ -4,48 +4,78 @@
     <static>true</static>
     <link name="pot_link">
 
-      <!-- The Pot -->
-      <visual name="pot_visual">
-        <pose>0 0 0.1 0 0 0</pose>
-        <geometry>
-          <cylinder>
-            <radius>0.3</radius>
-            <length>0.5</length>
-          </cylinder>
-        </geometry>
-        <material>
-          <script>
-            <uri>file://media/materials/scripts/gazebo.material</uri>
-            <name>Gazebo/Orange</name>
-          </script>
-        </material>
-      </visual>
-      <collision name="pot_collision">
-        <pose>0 0 0.1 0 0 0</pose>
-        <geometry>
-          <cylinder>
-            <radius>0.15</radius>
-            <length>0.2</length>
-          </cylinder>
-        </geometry>
-      </collision>
+      <!-- ==================== Visuals ==================== -->
 
-      <!-- The Soil -->
-      <visual name="soil_visual">
-        <pose>0 0 0.18 0 0 0</pose>
+      <!-- Base -->
+      <visual name="base_visual">
+        <pose>0 0 0.025 0 0 0</pose>
         <geometry>
-          <cylinder>
-            <radius>0.27</radius>
-            <length>0.2</length>
-          </cylinder>
+          <box><size>0.4 0.4 0.05</size></box>
         </geometry>
         <material>
-          <script>
-            <uri>file://media/materials/scripts/gazebo.material</uri>
-            <name>Gazebo/Dirt</name>
-          </script>
+          <script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Wood</name></script>
         </material>
       </visual>
+
+      <!-- Side Walls -->
+      <!-- Front Wall -->
+      <visual name="front_wall_visual">
+        <pose>0.175 0 0.225 0 0 0</pose>
+        <geometry><box><size>0.05 0.4 0.4</size></box></geometry>
+        <material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Wood</name></script></material>
+      </visual>
+      <!-- Back Wall -->
+      <visual name="back_wall_visual">
+        <pose>-0.175 0 0.225 0 0 0</pose>
+        <geometry><box><size>0.05 0.4 0.4</size></box></geometry>
+        <material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Wood</name></script></material>
+      </visual>
+      <!-- Right Wall -->
+      <visual name="right_wall_visual">
+        <pose>0 -0.175 0.225 0 0 0</pose>
+        <geometry><box><size>0.35 0.05 0.4</size></box></geometry>
+        <material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Wood</name></script></material>
+      </visual>
+      <!-- Left Wall -->
+      <visual name="left_wall_visual">
+        <pose>0 0.175 0.225 0 0 0</pose>
+        <geometry><box><size>0.35 0.05 0.4</size></box></geometry>
+        <material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Wood</name></script></material>
+      </visual>
+      
+      <!-- Soil -->
+      <visual name="soil_visual">
+        <pose>0 0 0.05 0 0 0</pose>
+        <geometry>
+          <box><size>0.35 0.35 0.3</size></box>
+        </geometry>
+        <material>
+          <script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Dirt</name></script>
+        </material>
+      </visual>
+
+      <!-- ==================== Collisions ==================== -->
+
+      <!-- Front Wall Collision -->
+      <collision name="front_wall_collision">
+        <pose>0.175 0 0.225 0 0 0</pose>
+        <geometry><box><size>0.05 0.4 0.45</size></box></geometry>
+      </collision>
+      <!-- Back Wall Collision -->
+      <collision name="back_wall_collision">
+        <pose>-0.175 0 0.225 0 0 0</pose>
+        <geometry><box><size>0.05 0.4 0.45</size></box></geometry>
+      </collision>
+      <!-- Right Wall Collision -->
+      <collision name="right_wall_collision">
+        <pose>0 -0.175 0.225 0 0 0</pose>
+        <geometry><box><size>0.4 0.05 0.45</size></box></geometry>
+      </collision>
+      <!-- Left Wall Collision -->
+      <collision name="left_wall_collision">
+        <pose>0 0.175 0.225 0 0 0</pose>
+        <geometry><box><size>0.4 0.05 0.45</size></box></geometry>
+      </collision>
       
     </link>
   </model>

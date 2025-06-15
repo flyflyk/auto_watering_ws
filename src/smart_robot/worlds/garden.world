@@ -106,7 +106,7 @@
     <!-- 充電站 -->
     <model name='charging_station_marker'>
       <static>true</static>
-      <pose>-8 8 0.01 0 0 0</pose> 
+      <pose>-8 -8 0.01 0 0 0</pose> 
       <link name='marker_link'>
         <visual name='visual_marker'>
           <geometry><cylinder><radius>0.3</radius><length>0.02</length></cylinder></geometry>

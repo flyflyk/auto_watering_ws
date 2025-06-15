@@ -40,11 +40,11 @@
     <!-- 5. 啟動 move_base 導航核心 -->
     <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
         <!-- 載入所有設定檔 -->
-        <rosparam file="$(find smart_robot)/config/costmap_common_params.yaml" command="load" ns="global_costmap" />
-        <rosparam file="$(find smart_robot)/config/costmap_common_params.yaml" command="load" ns="local_costmap" />
-        <rosparam file="$(find smart_robot)/config/local_costmap_params.yaml" command="load" />
-        <rosparam file="$(find smart_robot)/config/global_costmap_params.yaml" command="load" />
-        <rosparam file="$(find smart_robot)/config/dwa_local_planner_params.yaml" command="load" />
+        <rosparam file="$(find smart_robot)/config/costmap_common.yaml" command="load" ns="global_costmap" />
+        <rosparam file="$(find smart_robot)/config/costmap_common.yaml" command="load" ns="local_costmap" />
+        <rosparam file="$(find smart_robot)/config/local_costmap.yaml" command="load" />
+        <rosparam file="$(find smart_robot)/config/global_costmap.yaml" command="load" />
+        <rosparam file="$(find smart_robot)/config/dwa_local_planner.yaml" command="load" />
         <!-- 指定區域路徑規劃器 -->
         <param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS" />
     </node>

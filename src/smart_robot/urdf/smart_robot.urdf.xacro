@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="smart_robot">
 
-    <!-- 常數定義 -->
+    <!-- ================== CONSTANTS ================== -->
     <xacro:property name="PI" value="3.1415926535897931"/>
     <xacro:property name="chassis_mass" value="1.0"/>
     <xacro:property name="wheel_mass" value="0.1"/>
@@ -12,180 +12,74 @@
     <xacro:property name="wheel_length" value="0.04"/>
     <xacro:property name="wheel_separation" value="0.35"/>
 
-    <!-- 慣性矩陣宏 -->
+    <!-- ================== INERTIA MACROS ================== -->
     <xacro:macro name="solid_cylinder_inertia" params="m r h">
         <inertia ixx="${m*(3*r*r+h*h)/12}" ixy="0" ixz="0" iyy="${m*(3*r*r+h*h)/12}" iyz="0" izz="${m*r*r/2}"/>
     </xacro:macro>
     <xacro:macro name="wheel_inertia" params="m r h">
-      <inertia ixx="${m*(3*r*r+h*h)/12}" ixy="0" ixz="0"
-               iyy="${m*r*r/2}" iyz="0"
-               izz="${m*(3*r*r+h*h)/12}" />
+        <inertia ixx="${m*(3*r*r+h*h)/12}" ixy="0" ixz="0" iyy="${m*r*r/2}" iyz="0" izz="${m*(3*r*r+h*h)/12}"/>
     </xacro:macro>
     <xacro:macro name="sphere_inertia" params="m r">
         <inertia ixx="${2*m*r*r/5}" ixy="0" ixz="0" iyy="${2*m*r*r/5}" iyz="0" izz="${2*m*r*r/5}"/>
     </xacro:macro>
 
-    <!-- 機器人基礎 (通常是看不見的，用來穩定 TF tree) -->
+    <!-- ================== ROBOT LINKS AND JOINTS ================== -->
     <link name="base_footprint"/>
 
-    <!-- 車體 (chassis) -->
     <joint name="base_joint" type="fixed">
         <parent link="base_footprint"/>
         <child link="base_link"/>
         <origin xyz="0 0 ${chassis_height/2 + 0.01}" rpy="0 0 0"/>
     </joint>
     <link name="base_link">
-        <visual>
-            <geometry><cylinder radius="${chassis_radius}" length="${chassis_height}"/></geometry>
-            <material name="blue"><color rgba="0.2 0.2 1.0 1.0"/></material>
-        </visual>
-        <collision>
-            <geometry><cylinder radius="${chassis_radius}" length="${chassis_height}"/></geometry>
-        </collision>
-        <inertial>
-            <mass value="${chassis_mass}"/>
-            <origin xyz="0 0 0"/>
-            <xacro:solid_cylinder_inertia m="${chassis_mass}" r="${chassis_radius}" h="${chassis_height}"/>
-        </inertial>
+        <visual><geometry><cylinder radius="${chassis_radius}" length="${chassis_height}"/></geometry><material name="blue"><color rgba="0.2 0.2 1.0 1.0"/></material></visual>
+        <collision><geometry><cylinder radius="${chassis_radius}" length="${chassis_height}"/></geometry></collision>
+        <inertial><mass value="${chassis_mass}"/><origin xyz="0 0 0"/><xacro:solid_cylinder_inertia m="${chassis_mass}" r="${chassis_radius}" h="${chassis_height}"/></inertial>
     </link>
 
-    <!-- 右輪 -->
-    <joint name="right_wheel_joint" type="continuous">
-        <parent link="base_link"/>
-        <child link="right_wheel_link"/>
-        <origin xyz="0 -${wheel_separation/2} -0.01" rpy="-${PI/2} 0 0"/>
-        <axis xyz="0 0 1"/>
-    </joint>
+    <joint name="right_wheel_joint" type="continuous"><parent link="base_link"/><child link="right_wheel_link"/><origin xyz="0 -${wheel_separation/2} -0.01" rpy="-${PI/2} 0 0"/><axis xyz="0 0 1"/></joint>
     <link name="right_wheel_link">
-        <visual>
-            <geometry><cylinder radius="${wheel_radius}" length="${wheel_length}"/></geometry>
-            <material name="black"><color rgba="0.1 0.1 0.1 1.0"/></material>
-        </visual>
-        <collision>
-            <geometry><cylinder radius="${wheel_radius}" length="${wheel_length}"/></geometry>
-        </collision>
-        <inertial>
-            <mass value="${wheel_mass}"/>
-            <xacro:wheel_inertia m="${wheel_mass}" r="${wheel_radius}" h="${wheel_length}"/>
-        </inertial>
-        <gazebo reference="right_wheel_link">
-            <mu1>1.0</mu1>
-            <mu2>5.0</mu2>
-            <slip1>0.0</slip1>
-            <slip2>1.0</slip2>
-            <kp>1000000.0</kp>
-            <kd>100.0</kd>
-            <material>Gazebo/Grey</material>
-        </gazebo>
+        <visual><geometry><cylinder radius="${wheel_radius}" length="${wheel_length}"/></geometry><material name="black"><color rgba="0.1 0.1 0.1 1.0"/></material></visual>
+        <collision><geometry><cylinder radius="${wheel_radius}" length="${wheel_length}"/></geometry></collision>
+        <inertial><mass value="${wheel_mass}"/><xacro:wheel_inertia m="${wheel_mass}" r="${wheel_radius}" h="${wheel_length}"/></inertial>
     </link>
 
-     <!-- 左輪 -->
-    <joint name="left_wheel_joint" type="continuous">
-        <parent link="base_link"/>
-        <child link="left_wheel_link"/>
-        <origin xyz="0 ${wheel_separation/2} -0.01" rpy="${PI/2} 0 0"/>
-        <axis xyz="0 0 -1"/>
-    </joint>
+    <joint name="left_wheel_joint" type="continuous"><parent link="base_link"/><child link="left_wheel_link"/><origin xyz="0 ${wheel_separation/2} -0.01" rpy="${PI/2} 0 0"/><axis xyz="0 0 -1"/></joint>
     <link name="left_wheel_link">
-        <visual>
-            <geometry><cylinder radius="${wheel_radius}" length="${wheel_length}"/></geometry>
-            <material name="black"/>
-        </visual>
-        <collision>
-            <geometry><cylinder radius="${wheel_radius}" length="${wheel_length}"/></geometry>
-        </collision>
-        <inertial>
-            <mass value="${wheel_mass}"/>
-            <xacro:wheel_inertia m="${wheel_mass}" r="${wheel_radius}" h="${wheel_length}"/>
-        </inertial>
-        <gazebo reference="left_wheel_link">
-            <mu1>1.0</mu1>
-            <mu2>5.0</mu2>
-            <slip1>0.0</slip1>
-            <slip2>1.0</slip2>
-            <kp>1000000.0</kp>
-            <kd>100.0</kd>
-            <material>Gazebo/Grey</material>
-        </gazebo>
+        <visual><geometry><cylinder radius="${wheel_radius}" length="${wheel_length}"/></geometry><material name="black"/></visual>
+        <collision><geometry><cylinder radius="${wheel_radius}" length="${wheel_length}"/></geometry></collision>
+        <inertial><mass value="${wheel_mass}"/><xacro:wheel_inertia m="${wheel_mass}" r="${wheel_radius}" h="${wheel_length}"/></inertial>
     </link>
 
-    <!-- 前腳輪 (Front Caster Wheel) -->
-    <joint name="caster_wheel_front_joint" type="fixed">
-        <parent link="base_link"/>
-        <child link="caster_wheel_front_link"/>
-        <origin xyz="${chassis_radius*0.8} 0 -0.035" rpy="0 0 0"/>
-    </joint>
+    <joint name="caster_wheel_front_joint" type="fixed"><parent link="base_link"/><child link="caster_wheel_front_link"/><origin xyz="${chassis_radius*0.8} 0 -0.035" rpy="0 0 0"/></joint>
     <link name="caster_wheel_front_link">
-        <visual>
-            <geometry><sphere radius="${wheel_radius*0.5}"/></geometry>
-            <material name="grey"><color rgba="0.5 0.5 0.5 1.0"/></material>
-        </visual>
-        <collision>
-            <geometry><sphere radius="${wheel_radius*0.5}"/></geometry>
-        </collision>
-        <inertial>
-            <mass value="${caster_mass}"/>
-            <xacro:sphere_inertia m="${caster_mass}" r="${wheel_radius*0.5}"/>
-        </inertial>
-        <gazebo reference="caster_wheel_front_link">
-            <mu1>0.1</mu1>
-            <mu2>0.1</mu2>
-            <material>Gazebo/Grey</material>
-        </gazebo>
+        <visual><geometry><sphere radius="${wheel_radius*0.5}"/></geometry><material name="grey"><color rgba="0.5 0.5 0.5 1.0"/></material></visual>
+        <collision><geometry><sphere radius="${wheel_radius*0.5}"/></geometry></collision>
+        <inertial><mass value="${caster_mass}"/><xacro:sphere_inertia m="${caster_mass}" r="${wheel_radius*0.5}"/></inertial>
     </link>
 
-    <!-- 後腳輪 (Rear Caster Wheel) -->
-    <joint name="caster_wheel_rear_joint" type="fixed">
-        <parent link="base_link"/>
-        <child link="caster_wheel_rear_link"/>
-        <origin xyz="-${chassis_radius*0.8} 0 -0.035" rpy="0 0 0"/>
-    </joint>
+    <joint name="caster_wheel_rear_joint" type="fixed"><parent link="base_link"/><child link="caster_wheel_rear_link"/><origin xyz="-${chassis_radius*0.8} 0 -0.035" rpy="0 0 0"/></joint>
     <link name="caster_wheel_rear_link">
-        <visual>
-            <geometry><sphere radius="${wheel_radius*0.5}"/></geometry>
-            <material name="grey"/>
-        </visual>
-        <collision>
-            <geometry><sphere radius="${wheel_radius*0.5}"/></geometry>
-        </collision>
-        <inertial>
-            <mass value="${caster_mass}"/>
-            <xacro:sphere_inertia m="${caster_mass}" r="${wheel_radius*0.5}"/>
-        </inertial>
-        <gazebo reference="caster_wheel_rear_link">
-            <mu1>0.1</mu1>
-            <mu2>0.1</mu2>
-            <material>Gazebo/Grey</material>
-        </gazebo>
+        <visual><geometry><sphere radius="${wheel_radius*0.5}"/></geometry><material name="grey"/></visual>
+        <collision><geometry><sphere radius="${wheel_radius*0.5}"/></geometry></collision>
+        <inertial><mass value="${caster_mass}"/><xacro:sphere_inertia m="${caster_mass}" r="${wheel_radius*0.5}"/></inertial>
     </link>
 
-    <!-- 雷射掃描儀 (Lidar) -->
-    <joint name="laser_joint" type="fixed">
-        <parent link="base_link"/>
-        <child link="laser_link"/>
-        <origin xyz="${chassis_radius} 0 0.02" rpy="0 0 0"/>
-    </joint>
+    <joint name="laser_joint" type="fixed"><parent link="base_link"/><child link="laser_link"/><origin xyz="0 0 0.06" rpy="0 0 0"/></joint>
     <link name="laser_link">
-        <visual>
-            <geometry><cylinder radius="0.05" length="0.04"/></geometry>
-            <material name="red"><color rgba="1.0 0.0 0.0 1.0"/></material>
-        </visual>
-        <collision>
-            <geometry><cylinder radius="0.05" length="0.04"/></geometry>
-        </collision>
-        <inertial>
-            <mass value="0.1"/>
-            <xacro:solid_cylinder_inertia m="0.1" r="0.05" h="0.04"/>
-        </inertial>
+        <visual><geometry><cylinder radius="0.05" length="0.04"/></geometry><material name="red"><color rgba="1.0 0.0 0.0 1.0"/></material></visual>
+        <collision><geometry><cylinder radius="0.05" length="0.04"/></geometry></collision>
+        <inertial><mass value="0.1"/><xacro:solid_cylinder_inertia m="0.1" r="0.05" h="0.04"/></inertial>
     </link>
 
-    <!-- ################# GAZEBO PLUGINS ################# -->
+    <!-- ================== GAZEBO PLUGINS ================== -->
 
-    <!-- 差速驅動插件 -->
+    <!-- Differential Drive Plugin -->
     <gazebo>
-        <plugin name="diff_drive_controller" filename="libgazebo_ros_diff_drive.so">
+        <plugin name="differential_drive_controller" filename="libgazebo_ros_diff_drive.so">
             <alwaysOn>true</alwaysOn>
             <updateRate>100</updateRate>
+            <robotNamespace>/</robotNamespace>
             <leftJoint>left_wheel_joint</leftJoint>
             <rightJoint>right_wheel_joint</rightJoint>
             <wheelSeparation>${wheel_separation}</wheelSeparation>
@@ -200,19 +94,19 @@
         </plugin>
     </gazebo>
 
-    <!-- 雷射插件 -->
+    <!-- Laser Plugin -->
     <gazebo reference="laser_link">
-        <sensor type="ray" name="head_hokuyo_sensor">
+        <sensor type="ray" name="hokuyo_sensor">
             <pose>0 0 0 0 0 0</pose>
             <visualize>true</visualize>
             <update_rate>20</update_rate>
             <ray>
                 <scan>
                     <horizontal>
-                        <samples>90</samples>
+                        <samples>360</samples>
                         <resolution>1</resolution>
-                        <min_angle>-${PI/4}</min_angle>
-                        <max_angle>${PI/4}</max_angle>
+                        <min_angle>-${PI}</min_angle>
+                        <max_angle>${PI}</max_angle>
                     </horizontal>
                 </scan>
                 <range>
@@ -220,11 +114,7 @@
                     <max>10.0</max>
                     <resolution>0.01</resolution>
                 </range>
-                <noise>
-                    <type>gaussian</type>
-                    <mean>0.0</mean>
-                    <stddev>0.01</stddev>
-                </noise>
+                <noise><type>gaussian</type><mean>0.0</mean><stddev>0.01</stddev></noise>
             </ray>
             <plugin name="gazebo_ros_head_hokuyo_controller" filename="libgazebo_ros_laser.so">
                 <topicName>/scan</topicName>

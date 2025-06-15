@@ -4,7 +4,6 @@
     <!-- ================== CONSTANTS & MACROS ================== -->
     <xacro:property name="PI" value="3.1415926535897931"/>
 
-    <!-- 慣性矩陣宏 -->
     <xacro:macro name="box_inertia" params="m x y z">
         <inertia ixx="${m*(y*y+z*z)/12}" ixy="0" ixz="0" iyy="${m*(x*x+z*z)/12}" iyz="0" izz="${m*(x*x+y*y)/12}"/>
     </xacro:macro>
@@ -31,13 +30,12 @@
 
     <!-- ================== ROBOT STRUCTURE ================== -->
 
-    <!-- Base Link (車身主體) -->
-    <!-- 為了讓 TF 樹更標準，我們增加一個 base_footprint -->
+    <!-- Base Link -->
     <link name="base_footprint"/>
     <joint name="base_footprint_joint" type="fixed">
         <parent link="base_footprint"/>
         <child link="base_link"/>
-        <origin xyz="0 0 0.4" rpy="0 0 0"/> <!-- 將 base_link 的中心抬高 40cm -->
+        <origin xyz="0 0 0.4" rpy="0 0 0"/>
     </joint>
 
     <link name="base_link">
@@ -49,7 +47,7 @@
             <geometry><cylinder length="0.6" radius="0.2"/></geometry>
         </collision>
         <inertial>
-            <mass value="5.0"/> <!-- 給一個較重的質量 -->
+            <mass value="5.0"/>
             <xacro:cylinder_inertia m="5.0" r="0.2" h="0.6"/>
         </inertial>
     </link>
@@ -131,7 +129,6 @@
             <xacro:cylinder_inertia m="0.2" r="0.035" h="0.1"/>
         </inertial>
     </link>
-    <!-- ****** 關鍵修改: 關節類型改為 continuous ****** -->
     <joint name="right_front_wheel_joint" type="continuous">
         <parent link="right_base"/>
         <child link="right_front_wheel"/>
@@ -161,7 +158,7 @@
         <axis xyz="0 1 0"/>
     </joint>
 
-    <!-- Left Side (結構與右側對稱) -->
+    <!-- Left Side -->
     <link name="left_leg">
         <visual><geometry><box size="0.6 0.1 0.2"/></geometry><origin rpy="0 1.57075 0" xyz="0 0 -0.3"/><material name="white"/></visual>
         <collision><geometry><box size="0.6 0.1 0.2"/></geometry><origin rpy="0 1.57075 0" xyz="0 0 -0.3"/></collision>
@@ -190,7 +187,6 @@
     </link>
     <joint name="left_back_wheel_joint" type="continuous"><parent link="left_base"/><child link="left_back_wheel"/><origin rpy="0 0 0" xyz="-0.133333 0 -0.085"/><axis xyz="0 1 0"/></joint>
 
-    <!-- ****** 修改: 將 Gripper 改成 Water Sprayer ****** -->
     <link name="sprayer_pole">
         <visual>
             <geometry><cylinder length="0.2" radius="0.01"/></geometry>
@@ -220,7 +216,6 @@
         <origin xyz="0.22 0 0"/>
     </joint>
 
-    <!-- ****** 新增: 雷射感測器 ****** -->
     <link name="laser_link">
         <visual><geometry><box size="0.05 0.05 0.05"/></geometry><material name="red"><color rgba="1 0 0 1"/></material></visual>
         <collision><geometry><box size="0.05 0.05 0.05"/></geometry></collision>
@@ -229,19 +224,18 @@
     <joint name="base_to_laser" type="fixed">
         <parent link="base_link"/>
         <child link="laser_link"/>
-        <origin xyz="0.2 0 0"/> <!-- 放在車身前方 -->
+        <origin xyz="0.2 0 0"/>
     </joint>
 
 
     <!-- ================== GAZEBO PLUGINS ================== -->
 
-    <!-- Differential Drive Plugin - 假設四輪驅動 -->
+    <!-- Differential Drive Plugin -->
     <gazebo>
         <plugin name="differential_drive_controller" filename="libgazebo_ros_diff_drive.so">
             <alwaysOn>true</alwaysOn>
             <updateRate>100</updateRate>
             <robotNamespace>/</robotNamespace>
-            <!-- 指定左右兩側的驅動輪關節 -->
             <leftJoint>left_front_wheel_joint</leftJoint>
             <leftJoint>left_back_wheel_joint</leftJoint>
             <rightJoint>right_front_wheel_joint</rightJoint>
@@ -267,8 +261,10 @@
             <ray>
                 <scan>
                     <horizontal>
-                        <samples>360</samples><resolution>1</resolution>
-                        <min_angle>-3.14</min_angle><max_angle>3.14</max_angle>
+                        <samples>90</samples>
+                        <resolution>1</resolution>
+                        <min_angle>-0.785398</min_angle>
+                        <max_angle>0.785398</max_angle>
                     </horizontal>
                 </scan>
                 <range><min>0.10</min><max>10.0</max><resolution>0.01</resolution></range>

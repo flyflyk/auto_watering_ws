@@ -1,0 +1,52 @@
+<?xml version="1.0" ?>
+<sdf version="1.6">
+  <model name="custom_pot">
+    <static>true</static>
+    <link name="pot_link">
+
+      <!-- The Pot -->
+      <visual name="pot_visual">
+        <pose>0 0 0.1 0 0 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>0.15</radius>
+            <length>0.2</length>
+          </cylinder>
+        </geometry>
+        <material>
+          <script>
+            <uri>file://media/materials/scripts/gazebo.material</uri>
+            <name>Gazebo/Orange</name>
+          </script>
+        </material>
+      </visual>
+      <collision name="pot_collision">
+        <pose>0 0 0.1 0 0 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>0.15</radius>
+            <length>0.2</length>
+          </cylinder>
+        </geometry>
+      </collision>
+
+      <!-- The Soil -->
+      <visual name="soil_visual">
+        <pose>0 0 0.18 0 0 0</pose>
+        <geometry>
+          <cylinder>
+            <radius>0.14</radius>
+            <length>0.04</length>
+          </cylinder>
+        </geometry>
+        <material>
+          <script>
+            <uri>file://media/materials/scripts/gazebo.material</uri>
+            <name>Gazebo/Dirt</name>
+          </script>
+        </material>
+      </visual>
+      
+    </link>
+  </model>
+</sdf>

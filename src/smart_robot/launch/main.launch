@@ -1,4 +1,5 @@
 <launch>
+    <param name="/use_sim_time" value="true" />
     <!-- 1. 啟動 Gazebo 環境 -->
     <arg name="world_name" default="$(find smart_robot)/worlds/garden.world"/>
     <include file="$(find gazebo_ros)/launch/empty_world.launch">

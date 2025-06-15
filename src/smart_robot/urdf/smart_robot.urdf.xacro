@@ -120,16 +120,11 @@
         <origin xyz="${chassis_radius*0.8} 0 -${wheel_radius*0.5}" rpy="0 0 0"/>
     </joint>
     <link name="caster_wheel_front_link">
-        <visual><geometry><sphere radius="${wheel_radius*0.5}"/></geometry><material name="grey"><color rgba="0.5 0.5 0.5 1.0"/></material></visual>
-        <collision><geometry><sphere radius="${wheel_radius*0.5}"/></geometry></collision>
+        <visual>
+            <geometry><sphere radius="${wheel_radius*0.5}"/></geometry>
+            <material name="grey"><color rgba="0.5 0.5 0.5 1.0"/></material>
+        </visual>
         <inertial><mass value="${caster_mass}"/><xacro:sphere_inertia m="${caster_mass}" r="${wheel_radius*0.5}"/></inertial>
-        <gazebo reference="caster_wheel_front_link">
-            <mu1>0.05</mu1>
-            <mu2>0.05</mu2>
-            <kp>1000000.0</kp>
-            <kd>100.0</kd>
-            <material>Gazebo/Grey</material>
-        </gazebo>
     </link>
 
     <joint name="caster_wheel_rear_joint" type="fixed">
@@ -139,7 +134,6 @@
     </joint>
     <link name="caster_wheel_rear_link">
         <visual><geometry><sphere radius="${wheel_radius*0.5}"/></geometry><material name="grey"/></visual>
-        <collision><geometry><sphere radius="${wheel_radius*0.5}"/></geometry></collision>
         <inertial><mass value="${caster_mass}"/><xacro:sphere_inertia m="${caster_mass}" r="${wheel_radius*0.5}"/></inertial>
     </link>
 

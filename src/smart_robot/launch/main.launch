@@ -1,17 +1,61 @@
 <launch>
-    <!-- 1. 啟動 Gazebo 和機器人模型 -->
-    <include file="$(find smart_robot)/launch/spawn_robot.launch" />
+    <!-- 1. 啟動 Gazebo 環境 -->
+    <arg name="world_name" default="$(find smart_robot)/worlds/garden.world"/>
+    <include file="$(find gazebo_ros)/launch/empty_world.launch">
+        <arg name="world_name" value="$(arg world_name)"/>
+        <arg name="paused" value="false"/>
+        <arg name="use_sim_time" value="true"/>
+        <arg name="gui" value="true"/>
+        <arg name="headless" value="false"/>
+        <arg name="debug" value="false"/>
+    </include>
 
-    <!-- 2. 從 YAML 檔案載入植物位置到參數伺服器 -->
-    <rosparam file="$(find smart_robot)/config/plant_locations.yaml" command="load" ns="manager_node" />
-    <rosparam file="$(find smart_robot)/config/navigator_params.yaml" command="load" ns="navigator_node" />
+    <!-- 2. 在 Gazebo 中生成機器人模型 -->
+    <include file="$(find smart_robot)/launch/spawn_robot.launch"/>
 
-    <!-- 3. 啟動所有Python節點 -->
-    <node pkg="smart_robot" type="moisture_sensor_node.py" name="moisture_sensor_node" output="screen" />
-    <node pkg="smart_robot" type="pump_driver_node.py" name="pump_driver_node" output="screen" />
-    <node pkg="smart_robot" type="navigator_node.py" name="navigator_node" output="screen" />
+    <!-- 3. 載入預先製作好的地圖 -->
+    <arg name="map_file" default="$(find smart_robot)/maps/garden_map.yaml"/>
+    <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_file)" />
+
+    <!-- 4. 啟動 AMCL 進行定位 -->
+    <!-- AMCL (Adaptive Monte Carlo Localization) 用於在已知地圖中，根據雷射和里程計數據來定位機器人 -->
+    <node pkg="amcl" type="amcl" name="amcl" output="screen">
+        <!-- 調整參數以適應你的機器人 -->
+        <param name="odom_model_type" value="diff-corrected"/>
+        <param name="odom_frame_id" value="odom"/>
+        <param name="base_frame_id" value="base_footprint"/>
+        <param name="global_frame_id" value="map"/>
+        <param name="min_particles" value="500"/>
+        <param name="max_particles" value="3000"/>
+        <param name="update_min_d" value="0.2"/>
+        <param name="update_min_a" value="0.2"/>
+        <param name="laser_max_beams" value="60"/>
+        <!-- 設置初始位姿，讓 AMCL 知道機器人大約在哪裡 -->
+        <!-- 假設機器人初始在充電站 (0.5, 1.5) -->
+        <param name="initial_pose_x" value="0.5"/>
+        <param name="initial_pose_y" value="1.5"/>
+        <param name="initial_pose_a" value="0.0"/>
+    </node>
+
+    <!-- 5. 啟動 move_base 導航核心 -->
+    <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+        <!-- 載入所有設定檔 -->
+        <rosparam file="$(find smart_robot)/config/costmap_common_params.yaml" command="load" ns="global_costmap" />
+        <rosparam file="$(find smart_robot)/config/costmap_common_params.yaml" command="load" ns="local_costmap" />
+        <rosparam file="$(find smart_robot)/config/local_costmap_params.yaml" command="load" />
+        <rosparam file="$(find smart_robot)/config/global_costmap_params.yaml" command="load" />
+        <rosparam file="$(find smart_robot)/config/dwa_local_planner_params.yaml" command="load" />
+        <!-- 指定區域路徑規劃器 -->
+        <param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS" />
+    </node>
     
-    <!-- 延遲啟動 manager_node，確保其他節點都已準備就緒 -->
-    <node pkg="smart_robot" type="manager_node.py" name="manager_node" output="screen" launch-prefix="bash -c 'sleep 5; $0 $@' "/>
+    <!-- 6. 啟動你的應用程式節點 -->
+    <rosparam file="$(find smart_robot)/config/plant_locations.yaml" command="load" ns="manager_node" />
+    <node name="manager_node" pkg="smart_robot" type="manager_node.py" output="screen" launch-prefix="xterm -e"/>
 
+    <node name="moisture_sensor_node" pkg="smart_robot" type="moisture_sensor_node.py" output="screen"/>
+    <node name="pump_driver_node" pkg="smart_robot" type="pump_driver_node.py" output="screen"/>
+
+    <!-- 7. (可選) 啟動 Rviz 進行可視化 -->
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find smart_robot)/config/nav.rviz" />
 </launch>

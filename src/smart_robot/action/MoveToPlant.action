@@ -1,8 +1,0 @@
-# Goal: 定義要去哪裡
-geometry_msgs/Point target_plant_position
----
-# Result: 回報任務是否成功
-bool success
----
-# Feedback: 在任務執行中，回報目前狀態
-geometry_msgs/Point current_robot_position

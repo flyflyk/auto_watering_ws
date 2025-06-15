@@ -45,7 +45,7 @@
       
       <!-- Soil -->
       <visual name="soil_visual">
-        <pose>0 0 0.05 0 0 0</pose>
+        <pose>0 0 0.1 0 0 0</pose>
         <geometry>
           <box><size>0.35 0.35 0.3</size></box>
         </geometry>

@@ -3,7 +3,8 @@
     <param name="robot_description" command="$(find xacro)/xacro $(find smart_robot)/urdf/smart_robot.urdf.xacro" />
   
     <!-- 2. 在 Gazebo 中生成機器人模型 -->
-    <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" args="-param robot_description -urdf -model smart_robot" />
+    <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model" 
+          args="-param robot_description -urdf -model smart_robot -x 1.0 -y 0.0 -z 0.05" />
   
     <!-- 3. 啟動 robot_state_publisher，發布 TF 轉換 -->
     <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />

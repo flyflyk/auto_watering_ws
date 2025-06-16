@@ -213,7 +213,9 @@
             <odometryTopic>odom</odometryTopic>
             <odometryFrame>odom</odometryFrame>
             <robotBaseFrame>base_footprint</robotBaseFrame>
-            <publishTF>1</publishTF>
+            <publishOdomTF>true</publishOdomTF>
+            <publishWheelTF>false</publishWheelTF>
+            <publishTF>true</publishTF>
             <publishWheelJointState>true</publishWheelJointState>
             <odometrySource>world</odometrySource> 
             <legacyMode>false</legacyMode>

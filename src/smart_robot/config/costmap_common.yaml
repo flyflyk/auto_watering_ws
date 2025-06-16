@@ -2,7 +2,7 @@ footprint: [[0.25, 0.3], [0.25, -0.3], [-0.25, -0.3], [-0.25, 0.3]]
 
 # 膨脹層設定
 inflation_layer:
-  enabled: true
+  enabled: false
   cost_scaling_factor: 5.0
   inflation_radius: 0
 

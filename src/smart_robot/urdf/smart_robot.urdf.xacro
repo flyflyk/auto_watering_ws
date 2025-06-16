@@ -213,11 +213,11 @@
             <odometryTopic>odom</odometryTopic>
             <odometryFrame>odom</odometryFrame>
             <robotBaseFrame>base_footprint</robotBaseFrame>
-            <publishOdomTF>true</publishOdomTF>
-            <publishWheelTF>false</publishWheelTF>
+            <publishTF>1</publishTF>
             <publishWheelJointState>true</publishWheelJointState>
             <odometrySource>world</odometrySource> 
             <legacyMode>false</legacyMode>
+            <rosDebugLevel>na</rosDebugLevel>
         </plugin>
     </gazebo>
 

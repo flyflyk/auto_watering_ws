@@ -9,7 +9,7 @@ inflation_layer:
 # 障礙物層設定
 obstacle_layer:
   enabled: true
-  obstacle_range: 1.0
+  obstacle_range: 1.5
   raytrace_range: 1.5
   observation_sources: laser_scan_sensor
   laser_scan_sensor:

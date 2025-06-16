@@ -10,7 +10,7 @@ DWAPlannerROS:
 
   # Goal Tolerance Parameters
   yaw_goal_tolerance: 0.3
-  xy_goal_tolerance: 0.2
+  xy_goal_tolerance: 0.5
   
   # Forward Simulation Parameters
   sim_time: 1.5

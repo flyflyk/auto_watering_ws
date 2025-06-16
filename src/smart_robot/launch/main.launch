@@ -21,21 +21,35 @@
     <!-- 4. 啟動 AMCL 進行定位 -->
     <!-- AMCL (Adaptive Monte Carlo Localization) 用於在已知地圖中，根據雷射和里程計數據來定位機器人 -->
     <node pkg="amcl" type="amcl" name="amcl" output="screen">
-        <param name="odom_model_type" value="diff-corrected"/>
+        <param name="odom_model_type" value="diff"/>
         <param name="odom_frame_id" value="odom"/>
         <param name="base_frame_id" value="base_footprint"/>
         <param name="global_frame_id" value="map"/>
+        
+        <!-- 增加粒子數和更新容忍度 -->
         <param name="min_particles" value="500"/>
         <param name="max_particles" value="5000"/>
-        <param name="update_min_d" value="0.2"/>
-        <param name="update_min_a" value="0.2"/>
-        <param name="laser_max_beams" value="60"/>
-        <param name="transform_tolerance" value="0.5"/> 
-        <param name="laser_min_range" value="-1.0"/>
-        <param name="laser_max_range" value="-1.0"/>
-        <param name="initial_pose_x" value="0.5"/>
-        <param name="initial_pose_y" value="1.5"/>
-        <param name="initial_pose_a" value="0.0"/>
+        <param name="update_min_d" value="0.25"/>
+        <param name="update_min_a" value="0.5"/>
+        <param name="transform_tolerance" value="1.0"/>
+        
+        <!-- 濾波器參數 -->
+        <param name="odom_alpha1" value="0.2"/>
+        <param name="odom_alpha2" value="0.2"/>
+        <param name="odom_alpha3" value="0.2"/>
+        <param name="odom_alpha4" value="0.2"/>
+
+        <!-- 雷射模型參數 -->
+        <param name="laser_model_type" value="likelihood_field"/>
+        <param name="laser_z_hit" value="0.95"/>
+        <param name="laser_z_rand" value="0.05"/>
+        <param name="laser_likelihood_max_dist" value="2.0"/>
+        <param name="laser_max_beams" value="90"/>
+
+        <!-- 初始位置 -->
+        <param name="initial_pose_x" value="-8.0"/>
+        <param name="initial_pose_y" value="-8.0"/>
+        <param name="initial_pose_a" value="0.05"/>
     </node>
 
     <!-- 5. 啟動 move_base 導航核心 -->

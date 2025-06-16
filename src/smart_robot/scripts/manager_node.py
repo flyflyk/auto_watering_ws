@@ -8,7 +8,7 @@ import tf
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 from geometry_msgs.msg import Point, Pose, Quaternion
 from tf.transformations import quaternion_from_euler
-from std_srvs.srv import Trigger, TriggerRequest
+from std_srvs.srv import Trigger, TriggerRequest, Empty
 from smart_robot.srv import GetMoisture
 
 class ManagerNode:
@@ -44,6 +44,10 @@ class ManagerNode:
         self.trigger_water_service = rospy.ServiceProxy('/trigger_water', Trigger)
         rospy.wait_for_service('/get_moisture')
         self.get_moisture_service = rospy.ServiceProxy('/get_moisture', GetMoisture)
+        rospy.loginfo("Waiting for /move_base/clear_costmaps service...")
+        rospy.wait_for_service('/move_base/clear_costmaps')
+        self.clear_costmaps_service = rospy.ServiceProxy('/move_base/clear_costmaps', Empty)
+        rospy.loginfo("/move_base/clear_costmaps service connected.")
         
         rospy.loginfo("Manager Node is ready.")
 
@@ -99,6 +103,13 @@ class ManagerNode:
                 self.check_and_water()
                 # 更新當前位置，為下一個目標做準備
                 current_pos = plant['position']
+                rospy.loginfo("Clearing costmaps before next goal...")
+                try:
+                    self.clear_costmaps_service()
+                    rospy.loginfo("Costmaps cleared successfully.")
+                    rospy.sleep(1.0) # 等待1秒，讓清除操作生效
+                except rospy.ServiceException as e:
+                    rospy.logerr(f"Failed to clear costmaps: {e}")
             else:
                 rospy.logwarn(f"Failed to move to {plant['name']}. Status: {self.move_client.get_goal_status_text()}")
         

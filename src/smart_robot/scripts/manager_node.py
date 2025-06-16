@@ -6,9 +6,9 @@ import actionlib
 import math
 import tf
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
-from geometry_msgs.msg import Point, Pose, Quaternion
+from geometry_msgs.msg import Point, Quaternion, Twist
 from tf.transformations import quaternion_from_euler
-from std_srvs.srv import Trigger, TriggerRequest, Empty
+from std_srvs.srv import Trigger, TriggerRequest
 from smart_robot.srv import GetMoisture
 
 class ManagerNode:
@@ -16,6 +16,7 @@ class ManagerNode:
         rospy.init_node('manager_node')
         rospy.loginfo("Manager Node (move_base version) starting...")
         self.tf_listener = tf.TransformListener()
+        self.cmd_vel_pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
 
         # 獲取參數
         plant_locations_raw = rospy.get_param("~plants", [])
@@ -44,10 +45,6 @@ class ManagerNode:
         self.trigger_water_service = rospy.ServiceProxy('/trigger_water', Trigger)
         rospy.wait_for_service('/get_moisture')
         self.get_moisture_service = rospy.ServiceProxy('/get_moisture', GetMoisture)
-        rospy.loginfo("Waiting for /move_base/clear_costmaps service...")
-        rospy.wait_for_service('/move_base/clear_costmaps')
-        self.clear_costmaps_service = rospy.ServiceProxy('/move_base/clear_costmaps', Empty)
-        rospy.loginfo("/move_base/clear_costmaps service connected.")
         
         rospy.loginfo("Manager Node is ready.")
 
@@ -101,19 +98,43 @@ class ManagerNode:
             elif self.move_client.get_state() == actionlib.GoalStatus.SUCCEEDED:
                 rospy.loginfo(f"Successfully arrived at {plant['name']}.")
                 self.check_and_water()
+                self.execute_backup()
+
                 # 更新當前位置，為下一個目標做準備
-                current_pos = plant['position']
-                rospy.loginfo("Clearing costmaps before next goal...")
                 try:
-                    self.clear_costmaps_service()
-                    rospy.loginfo("Costmaps cleared successfully.")
-                    rospy.sleep(1.0) # 等待1秒，讓清除操作生效
-                except rospy.ServiceException as e:
-                    rospy.logerr(f"Failed to clear costmaps: {e}")
+                    self.tf_listener.waitForTransform("map", "base_footprint", rospy.Time(), rospy.Duration(2.0))
+                    (trans, rot) = self.tf_listener.lookupTransform("map", "base_footprint", rospy.Time(0))
+                    current_pos = {'x': trans[0], 'y': trans[1]}
+                    rospy.loginfo(f"Position after backup: {current_pos}")
+                except (tf.Exception) as e:
+                    rospy.logwarn(f"Could not get position after backup: {e}. Using last plant location as fallback.")
+                    current_pos = plant['position']
             else:
                 rospy.logwarn(f"Failed to move to {plant['name']}. Status: {self.move_client.get_goal_status_text()}")
         
         self.return_to_base(current_pos)
+    
+    def execute_backup(self, distance=1.0, speed=-0.25):
+        rospy.loginfo(f"Executing backup maneuver for {distance}m at {speed}m/s.")
+        
+        # 創建後退速度指令
+        backup_cmd = Twist()
+        backup_cmd.linear.x = speed
+
+        # 計算需要的時間
+        duration = distance / abs(speed)
+        rate = rospy.Rate(20) # 以 20Hz 的頻率發布
+        start_time = rospy.Time.now()
+
+        # 在指定時間內持續發布後退指令
+        while (rospy.Time.now() - start_time) < rospy.Duration(duration):
+            self.cmd_vel_pub.publish(backup_cmd)
+            rate.sleep()
+        
+        # 後退完成後，發布一個停止指令，並讓出 /cmd_vel 控制權
+        self.cmd_vel_pub.publish(Twist()) 
+        rospy.sleep(0.5) # 短暫停頓，確保 move_base 能重新接管
+        rospy.loginfo("Backup maneuver complete.")
 
     def create_move_base_goal(self, target_position_dict, current_position_dict):
         goal = MoveBaseGoal()

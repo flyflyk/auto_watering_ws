@@ -90,7 +90,7 @@ class ManagerNode:
             rospy.loginfo(f"Next target: {plant['name']} at {plant['position']}")
             goal = self.create_move_base_goal(plant['position'], current_pos)
             self.move_client.send_goal(goal)
-            finished_in_time = self.move_client.wait_for_result(rospy.Duration(120.0))
+            finished_in_time = self.move_client.wait_for_result(rospy.Duration(300.0))
 
             if not finished_in_time:
                 self.move_client.cancel_goal()
@@ -176,7 +176,7 @@ class ManagerNode:
         rospy.loginfo("All plants visited. Returning to charging station.")
         goal = self.create_move_base_goal(self.charging_station_pos, current_position_dict)
         self.move_client.send_goal(goal)
-        self.move_client.wait_for_result(rospy.Duration(120.0))
+        self.move_client.wait_for_result(rospy.Duration(300.0))
         if self.move_client.get_state() == actionlib.GoalStatus.SUCCEEDED:
             rospy.loginfo("Arrived at charging station. Mission complete.")
         else:

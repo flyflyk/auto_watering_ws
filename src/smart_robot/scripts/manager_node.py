@@ -56,19 +56,34 @@ class ManagerNode:
         return sorted(plants, key=lambda p: p['distance'])
 
     def run_watering_mission(self):
-        # 將延時移到這裡
-        rospy.loginfo("Waiting for AMCL to settle and TF tree to be ready...")
-        rospy.sleep(15.0)
-
-        rospy.loginfo("Starting watering mission with move_base...")
+        rospy.loginfo("Waiting for navigation stack to be ready by sending a dummy goal...")
+        
+        # 1. 獲取當前位置作為熱身目標
         try:
-            self.tf_listener.waitForTransform("map", "base_footprint", rospy.Time(), rospy.Duration(5.0))
+            self.tf_listener.waitForTransform("map", "base_footprint", rospy.Time(), rospy.Duration(10.0))
             (trans, rot) = self.tf_listener.lookupTransform("map", "base_footprint", rospy.Time(0))
-            current_pos = {'x': trans[0], 'y': trans[1]}
-            rospy.loginfo(f"Initial robot position from TF: {current_pos}")
+            warm_up_pos = {'x': trans[0], 'y': trans[1]}
+            rospy.loginfo(f"Got current position for warm-up: {warm_up_pos}")
         except (tf.Exception) as e:
-            rospy.logwarn(f"Could not get initial robot position from TF: {e}. Using charging station as fallback.")
-            current_pos = self.charging_station_pos
+            rospy.logerr(f"Cannot get robot position for warm-up. Aborting mission. Error: {e}")
+            return # 如果連位置都獲取不到，直接終止任務
+
+        # 2. 發送熱身目標
+        warm_up_goal = MoveBaseGoal()
+        warm_up_goal.target_pose.header.frame_id = "map"
+        warm_up_goal.target_pose.header.stamp = rospy.Time.now()
+        warm_up_goal.target_pose.pose.position = Point(**warm_up_pos)
+        warm_up_goal.target_pose.pose.orientation.w = 1.0
+
+        self.move_client.send_goal(warm_up_goal)
+        finished_in_time = self.move_client.wait_for_result(rospy.Duration(15.0)) # 給15秒時間來完成這個簡單的任務
+
+        if not finished_in_time or self.move_client.get_state() != actionlib.GoalStatus.SUCCEEDED:
+            rospy.logerr("Navigation stack warm-up failed. The robot might be stuck or localization is not ready. Aborting mission.")
+            return
+        
+        rospy.loginfo("Navigation stack is ready! Starting watering mission...")
+        current_pos = warm_up_pos
 
         for plant in self.plant_locations:
             rospy.loginfo(f"Next target: {plant['name']} at {plant['position']}")

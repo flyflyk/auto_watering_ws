@@ -1,10 +1,10 @@
-robot_radius: 0.17
+footprint: [[0.25, 0.3], [0.25, -0.3], [-0.25, -0.3], [-0.25, 0.3]]
 
 # 膨脹層設定
 inflation_layer:
   enabled: true
-  cost_scaling_factor: 10.0
-  inflation_radius: 0.25
+  cost_scaling_factor: 5.0
+  inflation_radius: 0.1
 
 # 障礙物層設定
 obstacle_layer:

@@ -57,35 +57,26 @@ class ManagerNode:
         return sorted(plants, key=lambda p: p['distance'])
 
     def run_watering_mission(self):
-        rospy.loginfo("Waiting for navigation stack to be ready by sending a dummy goal...")
+        rospy.loginfo("Waiting for the AMCL localization to be ready...")
+        rospy.loginfo("This is done by waiting for the 'map' to 'odom' transform.")
         
-        # 1. 獲取當前位置作為熱身目標
         try:
-            self.tf_listener.waitForTransform("map", "base_footprint", rospy.Time(), rospy.Duration(10.0))
-            (trans, rot) = self.tf_listener.lookupTransform("map", "base_footprint", rospy.Time(0))
-            warm_up_pos = {'x': trans[0], 'y': trans[1]}
-            rospy.loginfo(f"Got current position for warm-up: {warm_up_pos}")
+            self.tf_listener.waitForTransform("map", "odom", rospy.Time(), rospy.Duration(60.0))
+            rospy.loginfo("AMCL is ready! The 'map' -> 'odom' transform is available.")
         except (tf.Exception) as e:
-            rospy.logerr(f"Cannot get robot position for warm-up. Aborting mission. Error: {e}")
+            rospy.logerr(f"Could not get transform from 'map' to 'odom' after 60 seconds. AMCL might not be working. Aborting mission. Error: {e}")
             return
 
-        # 2. 發送熱身目標
-        warm_up_goal = MoveBaseGoal()
-        warm_up_goal.target_pose.header.frame_id = "map"
-        warm_up_goal.target_pose.header.stamp = rospy.Time.now()
-        warm_up_goal.target_pose.pose.position = Point(**warm_up_pos)
-        warm_up_goal.target_pose.pose.orientation.w = 1.0
-
-        self.move_client.send_goal(warm_up_goal)
-        finished_in_time = self.move_client.wait_for_result(rospy.Duration(15.0))
-
-        if not finished_in_time or self.move_client.get_state() != actionlib.GoalStatus.SUCCEEDED:
-            rospy.logerr("Navigation stack warm-up failed. The robot might be stuck or localization is not ready. Aborting mission.")
-            return
-        
         rospy.loginfo("Navigation stack is ready! Starting watering mission...")
-        current_pos = warm_up_pos
-
+        
+        # 獲取可靠的當前位置作為起點
+        try:
+            (trans, rot) = self.tf_listener.lookupTransform("map", "base_footprint", rospy.Time(0))
+            current_pos = {'x': trans[0], 'y': trans[1]}
+        except (tf.Exception) as e:
+            rospy.logerr(f"CRITICAL: Failed to get initial robot position even after AMCL is ready. Error: {e}")
+            return
+            
         for plant in self.plant_locations:
             rospy.loginfo(f"Next target: {plant['name']} at {plant['position']}")
             goal = self.create_move_base_goal(plant['position'], current_pos)
@@ -101,7 +92,6 @@ class ManagerNode:
                 
                 self.execute_backup_goal() 
 
-                # 更新當前位置，為下一個目標做準備
                 try:
                     self.tf_listener.waitForTransform("map", "base_footprint", rospy.Time(), rospy.Duration(4.0))
                     (trans, rot) = self.tf_listener.lookupTransform("map", "base_footprint", rospy.Time(0))
@@ -109,7 +99,7 @@ class ManagerNode:
                     rospy.loginfo(f"Position after backup: {current_pos}")
                 except (tf.Exception) as e:
                     rospy.logerr(f"CRITICAL: Could not get robot position after backup: {e}. Aborting mission to prevent unpredictable behavior.")
-                    return
+                    return 
             else:
                 rospy.logwarn(f"Failed to move to {plant['name']}. Status: {self.move_client.get_goal_status_text()}")
         

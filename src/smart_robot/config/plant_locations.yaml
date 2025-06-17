@@ -2,7 +2,7 @@ plants:
   - name: "plant_target_1"
     position: {x: -7.0, y: 8.0, z: 0.0}
   - name: "plant_target_2"
-    position: {x: -3.0, y: -9.0, z: 0.0}
+    position: {x: -5.0, y: -9.0, z: 0.0}
   - name: "plant_target_3"
     position: {x: 0, y: -7.0, z: 0.0}
   - name: "plant_target_4"

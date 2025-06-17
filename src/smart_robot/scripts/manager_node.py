@@ -6,7 +6,7 @@ import actionlib
 import math
 import tf
 from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
-from geometry_msgs.msg import Point, Quaternion, Twist
+from geometry_msgs.msg import Point, Quaternion
 from tf.transformations import quaternion_from_euler
 from std_srvs.srv import Trigger, TriggerRequest
 from smart_robot.srv import GetMoisture
@@ -16,7 +16,6 @@ class ManagerNode:
         rospy.init_node('manager_node')
         rospy.loginfo("Manager Node (move_base version) starting...")
         self.tf_listener = tf.TransformListener()
-        self.cmd_vel_pub = rospy.Publisher('/cmd_vel', Twist, queue_size=1)
 
         # 獲取參數
         plant_locations_raw = rospy.get_param("~plants", [])
@@ -48,6 +47,7 @@ class ManagerNode:
         
         rospy.loginfo("Manager Node is ready.")
 
+
     def sort_plants_by_distance(self, plants):
         start_pos = self.charging_station_pos
         for plant in plants:
@@ -67,7 +67,7 @@ class ManagerNode:
             rospy.loginfo(f"Got current position for warm-up: {warm_up_pos}")
         except (tf.Exception) as e:
             rospy.logerr(f"Cannot get robot position for warm-up. Aborting mission. Error: {e}")
-            return # 如果連位置都獲取不到，直接終止任務
+            return
 
         # 2. 發送熱身目標
         warm_up_goal = MoveBaseGoal()
@@ -77,7 +77,7 @@ class ManagerNode:
         warm_up_goal.target_pose.pose.orientation.w = 1.0
 
         self.move_client.send_goal(warm_up_goal)
-        finished_in_time = self.move_client.wait_for_result(rospy.Duration(15.0)) # 給15秒時間來完成這個簡單的任務
+        finished_in_time = self.move_client.wait_for_result(rospy.Duration(15.0))
 
         if not finished_in_time or self.move_client.get_state() != actionlib.GoalStatus.SUCCEEDED:
             rospy.logerr("Navigation stack warm-up failed. The robot might be stuck or localization is not ready. Aborting mission.")
@@ -98,43 +98,50 @@ class ManagerNode:
             elif self.move_client.get_state() == actionlib.GoalStatus.SUCCEEDED:
                 rospy.loginfo(f"Successfully arrived at {plant['name']}.")
                 self.check_and_water()
-                self.execute_backup()
+                
+                self.execute_backup_goal() 
 
                 # 更新當前位置，為下一個目標做準備
                 try:
-                    self.tf_listener.waitForTransform("map", "base_footprint", rospy.Time(), rospy.Duration(2.0))
+                    self.tf_listener.waitForTransform("map", "base_footprint", rospy.Time(), rospy.Duration(4.0))
                     (trans, rot) = self.tf_listener.lookupTransform("map", "base_footprint", rospy.Time(0))
                     current_pos = {'x': trans[0], 'y': trans[1]}
                     rospy.loginfo(f"Position after backup: {current_pos}")
                 except (tf.Exception) as e:
-                    rospy.logwarn(f"Could not get position after backup: {e}. Using last plant location as fallback.")
-                    current_pos = plant['position']
+                    rospy.logerr(f"CRITICAL: Could not get robot position after backup: {e}. Aborting mission to prevent unpredictable behavior.")
+                    return
             else:
                 rospy.logwarn(f"Failed to move to {plant['name']}. Status: {self.move_client.get_goal_status_text()}")
         
         self.return_to_base(current_pos)
     
-    def execute_backup(self, distance=1.0, speed=-0.25):
-        rospy.loginfo(f"Executing backup maneuver for {distance}m at {speed}m/s.")
+    def execute_backup_goal(self, distance=-0.5):
+        """
+        Sends a goal to move_base to move the robot backward relative to its current position.
+        :param distance: The distance to move backward (should be negative).
+        """
+        rospy.loginfo(f"Executing backup maneuver using move_base for {abs(distance)}m.")
         
-        # 創建後退速度指令
-        backup_cmd = Twist()
-        backup_cmd.linear.x = speed
-
-        # 計算需要的時間
-        duration = distance / abs(speed)
-        rate = rospy.Rate(20) # 以 20Hz 的頻率發布
-        start_time = rospy.Time.now()
-
-        # 在指定時間內持續發布後退指令
-        while (rospy.Time.now() - start_time) < rospy.Duration(duration):
-            self.cmd_vel_pub.publish(backup_cmd)
-            rate.sleep()
+        backup_goal = MoveBaseGoal()
+        backup_goal.target_pose.header.frame_id = "base_footprint"
+        backup_goal.target_pose.header.stamp = rospy.Time.now()
         
-        # 後退完成後，發布一個停止指令，並讓出 /cmd_vel 控制權
-        self.cmd_vel_pub.publish(Twist()) 
-        rospy.sleep(0.5) # 短暫停頓，確保 move_base 能重新接管
-        rospy.loginfo("Backup maneuver complete.")
+        backup_goal.target_pose.pose.position.x = distance
+        backup_goal.target_pose.pose.orientation.w = 1.0
+        
+        self.move_client.send_goal(backup_goal)
+        
+        finished_in_time = self.move_client.wait_for_result(rospy.Duration(20.0))
+        
+        if not finished_in_time:
+            self.move_client.cancel_goal()
+            rospy.logwarn("Timed out during backup maneuver.")
+        elif self.move_client.get_state() == actionlib.GoalStatus.SUCCEEDED:
+            rospy.loginfo("Backup maneuver complete.")
+        else:
+            rospy.logwarn(f"Backup maneuver failed. Status: {self.move_client.get_goal_status_text()}")
+        
+        rospy.sleep(1.0)
 
     def create_move_base_goal(self, target_position_dict, current_position_dict):
         goal = MoveBaseGoal()
@@ -152,6 +159,7 @@ class ManagerNode:
         goal.target_pose.pose.orientation = Quaternion(*q)
         
         return goal
+
 
     def check_and_water(self):
         try:

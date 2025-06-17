@@ -1,5 +1,6 @@
 global_costmap:
   allow_unknown: true
+  static_map: true
   global_frame: map
   robot_base_frame: base_footprint
   update_rate: 5.0

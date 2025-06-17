@@ -29,22 +29,22 @@
         <!-- 增加粒子數和更新容忍度 -->
         <param name="min_particles" value="500"/>
         <param name="max_particles" value="5000"/>
-        <param name="update_min_d" value="0.25"/>
-        <param name="update_min_a" value="0.5"/>
-        <param name="transform_tolerance" value="1.0"/>
+        <param name="update_min_d" value="0.2"/>
+        <param name="update_min_a" value="0.26"/>
+        <param name="transform_tolerance" value="0.5"/>
         
         <!-- 濾波器參數 -->
-        <param name="odom_alpha1" value="0.2"/>
-        <param name="odom_alpha2" value="0.2"/>
-        <param name="odom_alpha3" value="0.2"/>
-        <param name="odom_alpha4" value="0.2"/>
+        <param name="odom_alpha1" value="0.1"/>
+        <param name="odom_alpha2" value="0.1"/>
+        <param name="odom_alpha3" value="0.1"/>
+        <param name="odom_alpha4" value="0.1"/>
 
         <!-- 雷射模型參數 -->
         <param name="laser_model_type" value="likelihood_field"/>
         <param name="laser_z_hit" value="0.95"/>
         <param name="laser_z_rand" value="0.05"/>
         <param name="laser_likelihood_max_dist" value="2.0"/>
-        <param name="laser_max_beams" value="90"/>
+        <param name="laser_max_beams" value="180"/>
 
         <!-- 初始位置 -->
         <param name="initial_pose_x" value="-8.0"/>

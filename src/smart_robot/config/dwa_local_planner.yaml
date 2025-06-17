@@ -17,10 +17,10 @@ DWAPlannerROS:
   sim_time: 2.0
   
   # Trajectory Scoring Parameters
-  path_distance_bias: 128.0
+  path_distance_bias: 256.0
   goal_distance_bias: 10.0
   occdist_scale: 0.01
-  forward_point_distance: 0.1
+  forward_point_distance: 1.0
   
   # Oscillation Prevention Parameters
   oscillation_reset_dist: 0.05

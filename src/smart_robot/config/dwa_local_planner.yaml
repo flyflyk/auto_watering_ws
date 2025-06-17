@@ -14,7 +14,7 @@ DWAPlannerROS:
   xy_goal_tolerance: 0.15
   
   # Forward Simulation Parameters
-  sim_time: 1.0
+  sim_time: 2.0
   
   # Trajectory Scoring Parameters
   path_distance_bias: 32.0

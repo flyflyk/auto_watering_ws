@@ -116,15 +116,11 @@ class ManagerNode:
         self.return_to_base(current_pos)
     
     def execute_backup_goal(self, distance=-0.5):
-        """
-        Sends a goal to move_base to move the robot backward relative to its current position.
-        :param distance: The distance to move backward (should be negative).
-        """
         rospy.loginfo(f"Executing backup maneuver using move_base for {abs(distance)}m.")
         
         backup_goal = MoveBaseGoal()
         backup_goal.target_pose.header.frame_id = "base_footprint"
-        backup_goal.target_pose.header.stamp = rospy.Time.now()
+        backup_goal.target_pose.header.stamp = rospy.Time()
         
         backup_goal.target_pose.pose.position.x = distance
         backup_goal.target_pose.pose.orientation.w = 1.0

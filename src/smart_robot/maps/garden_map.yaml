@@ -2,6 +2,6 @@ image: /home/flyflyk/auto_watering_ws/src/smart_robot/maps/garden_map.pgm
 resolution: 0.050000
 origin: [-21.200000, -21.200000, 0.000000]
 negate: 0
-occupied_thresh: 0.65
+occupied_thresh: 0.9
 free_thresh: 0.196
 

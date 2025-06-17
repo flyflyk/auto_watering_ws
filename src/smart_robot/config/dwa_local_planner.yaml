@@ -6,7 +6,7 @@ DWAPlannerROS:
   max_vel_x: 1.0
   min_vel_x: -1.0
   max_vel_theta: 2.5
-  min_vel_theta: 0.2
+  min_vel_theta: -2.5
   clearing_rotation_allowed: true
 
   # Goal Tolerance Parameters
@@ -17,9 +17,12 @@ DWAPlannerROS:
   sim_time: 2.0
   
   # Trajectory Scoring Parameters
-  path_distance_bias: 64.0
-  goal_distance_bias: 32.0
-  occdist_scale: 0.02
+  path_distance_bias: 32.0
+  goal_distance_bias: 24.0
+  occdist_scale: 0.05
   
   # Oscillation Prevention Parameters
   oscillation_reset_dist: 0.05
+
+  # Debug
+  publish_cost_grid: true

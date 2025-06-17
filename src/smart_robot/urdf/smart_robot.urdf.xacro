@@ -201,12 +201,11 @@
             <alwaysOn>true</alwaysOn>
             <updateRate>100</updateRate>
             <robotNamespace>/</robotNamespace>
-            <leftJoint>left_front_wheel_joint</leftJoint>
             <leftJoint>left_back_wheel_joint</leftJoint>
-            <rightJoint>right_front_wheel_joint</rightJoint>
             <rightJoint>right_back_wheel_joint</rightJoint>
-            <wheelSeparation>${2 * 0.22}</wheelSeparation>
-            <wheelDiameter>${2 * 0.035}</wheelDiameter>
+            
+            <wheelSeparation>0.44</wheelSeparation> <!-- ${2 * 0.22} -->
+            <wheelDiameter>0.07</wheelDiameter>   <!-- ${2 * 0.035} -->
             <wheelTorque>30</wheelTorque>
             <wheelAcceleration>1.8</wheelAcceleration>
             <commandTopic>cmd_vel</commandTopic>
@@ -228,20 +227,26 @@
         <sensor type="ray" name="hokuyo_sensor">
             <pose>0 0 0 0 0 0</pose>
             <visualize>true</visualize>
-            <update_rate>50</update_rate>
+            <update_rate>40</update_rate>
             <ray>
                 <scan>
                     <horizontal>
-                        <samples>90</samples>
+                        <samples>180</samples>
                         <resolution>1</resolution>
-                        <min_angle>-0.785398</min_angle>
-                        <max_angle>0.785398</max_angle>
+                        <min_angle>-1.57079</min_angle>
+                        <max_angle>1.57079</max_angle>
                     </horizontal>
                 </scan>
                 <range>
                     <min>0.10</min>
                     <max>10.0</max>
+                    <resolution>0.01</resolution>
                 </range>
+                <noise>
+                  <type>gaussian</type>
+                  <mean>0.0</mean>
+                  <stddev>0.01</stddev>
+                </noise>
             </ray>
             <plugin name="gazebo_ros_laser" filename="libgazebo_ros_laser.so">
                 <topicName>/scan</topicName>

@@ -115,7 +115,7 @@ class ManagerNode:
         
         self.return_to_base(current_pos)
     
-    def execute_backup_goal(self, distance=-0.5):
+    def execute_backup_goal(self, distance=-1.5):
         rospy.loginfo(f"Executing backup maneuver using move_base for {abs(distance)}m.")
         
         backup_goal = MoveBaseGoal()

@@ -181,6 +181,6 @@ class ManagerNode:
 if __name__ == '__main__':
     try:
         manager = ManagerNode()
-        manager.run_watering_mission()
+        #manager.run_watering_mission()
     except rospy.ROSInterruptException:
         pass

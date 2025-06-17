@@ -66,7 +66,9 @@ class ManagerNode:
         except (tf.Exception) as e:
             rospy.logerr(f"Could not get transform from 'map' to 'odom' after 60 seconds. AMCL might not be working. Aborting mission. Error: {e}")
             return
-
+        
+        rospy.loginfo("Giving AMCL 10 seconds to converge...")
+        rospy.sleep(10.0)
         rospy.loginfo("Navigation stack is ready! Starting watering mission...")
         
         # 獲取可靠的當前位置作為起點

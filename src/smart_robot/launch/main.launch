@@ -67,7 +67,7 @@
         <param name="controller_patience" value="15.0"/>
         <param name="planner_frequency" value="0.1"/>
         <param name="planner_patience" value="5.0"/>
-        <param name="transform_tolerance" value="0.5"/>
+        <param name="transform_tolerance" value="1.0"/>
     </node>
     
     <!-- 6. 啟動你的應用程式節點 -->

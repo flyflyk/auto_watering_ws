@@ -77,9 +77,9 @@ Visualization Manager:
           Value: true
         laser_link:
           Value: true
-        left_base:
+        left_back_wheel:
           Value: true
-        left_front_wheel:
+        left_base:
           Value: true
         left_leg:
           Value: true
@@ -87,9 +87,9 @@ Visualization Manager:
           Value: true
         odom:
           Value: true
-        right_base:
+        right_back_wheel:
           Value: true
-        right_front_wheel:
+        right_base:
           Value: true
         right_leg:
           Value: true
@@ -114,11 +114,11 @@ Visualization Manager:
                   {}
                 left_leg:
                   left_base:
-                    left_front_wheel:
+                    left_back_wheel:
                       {}
                 right_leg:
                   right_base:
-                    right_front_wheel:
+                    right_back_wheel:
                       {}
                 sprayer_pole:
                   sprayer_nozzle:
@@ -247,6 +247,40 @@ Visualization Manager:
       Topic: /move_base/DWAPlannerROS/publish_cost_grid
       Unreliable: false
       Value: true
+    - Alpha: 0.699999988079071
+      Class: rviz/Map
+      Color Scheme: map
+      Draw Behind: false
+      Enabled: true
+      Name: Map
+      Topic: /move_base/local_costmap/costmap
+      Unreliable: false
+      Use Timestamp: false
+      Value: true
+    - Alpha: 1
+      Buffer Length: 1
+      Class: rviz/Path
+      Color: 170; 85; 0
+      Enabled: true
+      Head Diameter: 0.30000001192092896
+      Head Length: 0.20000000298023224
+      Length: 0.30000001192092896
+      Line Style: Lines
+      Line Width: 0.029999999329447746
+      Name: Path
+      Offset:
+        X: 0
+        Y: 0
+        Z: 0
+      Pose Color: 255; 85; 255
+      Pose Style: None
+      Queue Size: 10
+      Radius: 0.029999999329447746
+      Shaft Diameter: 0.10000000149011612
+      Shaft Length: 0.10000000149011612
+      Topic: /move_base/DWAPlannerROS/local_plan
+      Unreliable: false
+      Value: true
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
@@ -275,7 +309,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 0.13851872086524963
+      Distance: 18.58444595336914
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -283,17 +317,17 @@ Visualization Manager:
         Value: false
       Field of View: 0.7853981852531433
       Focal Point:
-        X: -1.6717822551727295
-        Y: -6.604808807373047
-        Z: 3.916923999786377
+        X: -0.12373673170804977
+        Y: -0.7719043493270874
+        Z: 1.1345760822296143
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.6203977465629578
+      Pitch: 0.5853978991508484
       Target Frame: <Fixed Frame>
-      Yaw: 0.1753995567560196
+      Yaw: 5.20858097076416
     Saved: ~
 Window Geometry:
   Displays:
@@ -311,5 +345,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1200
-  X: 473
-  Y: 31
+  X: 441
+  Y: -1

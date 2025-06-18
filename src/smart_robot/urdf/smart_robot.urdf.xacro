@@ -216,6 +216,8 @@
         <odometryTopic>odom</odometryTopic>
         <odometryFrame>odom</odometryFrame>
         <robotBaseFrame>base_footprint</robotBaseFrame>
+        <publishOdomTF>false</publishOdomTF>
+        <publishTf>false</publishTf>
       </plugin>
     </gazebo>
 

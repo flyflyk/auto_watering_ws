@@ -11,6 +11,10 @@
         <arg name="debug" value="false"/>
     </include>
 
+    <node pkg="robot_localization" type="ekf_localization_node" name="ekf_se" clear_params="true">
+        <rosparam command="load" file="$(find smart_robot)/config/ekf.yaml" />
+    </node>
+
     <!-- 2. 在 Gazebo 中生成機器人模型 -->
     <include file="$(find smart_robot)/launch/spawn_robot.launch"/>
 
@@ -21,6 +25,8 @@
     <!-- 4. 啟動 AMCL 進行定位 -->
     <!-- AMCL (Adaptive Monte Carlo Localization) 用於在已知地圖中，根據雷射和里程計數據來定位機器人 -->
     <node pkg="amcl" type="amcl" name="amcl" output="screen">
+        <remap from="odom" to="/odometry/filtered"/>
+
         <param name="odom_model_type" value="diff"/>
         <param name="odom_frame_id" value="odom"/>
         <param name="base_frame_id" value="base_footprint"/>
@@ -55,6 +61,7 @@
     <!-- 5. 啟動 move_base 導航核心 -->
     <rosparam command="delete" param="/move_base" />
     <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+        <remap from="odom" to="/odometry/filtered"/>
         <!-- 載入所有設定檔 -->
         <rosparam file="$(find smart_robot)/config/costmap_common.yaml" command="load" ns="global_costmap" />
         <rosparam file="$(find smart_robot)/config/costmap_common.yaml" command="load" ns="local_costmap" />

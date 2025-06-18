@@ -1,0 +1,15 @@
+frequency: 50
+sensor_timeout: 0.1
+two_d_mode: true
+map_frame: map
+odom_frame: odom
+base_link_frame: base_footprint
+world_frame: odom
+
+odom0: /odom
+odom0_config: [false, false, false,  # x, y, z
+               false, false, false,  # roll, pitch, yaw
+               true,  true,  false,  # vx, vy, vz
+               false, false, true,   # vroll, vpitch, vyaw
+               false, false, false]
+odom0_differential: false

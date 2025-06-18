@@ -9,7 +9,7 @@ DWAPlannerROS:
   min_vel_theta: -2.5
 
   # Goal Tolerance
-  yaw_goal_tolerance: 6.28318530718
+  yaw_goal_tolerance: 3.0
   xy_goal_tolerance: 0.3
   
   # Forward Simulation
@@ -18,7 +18,7 @@ DWAPlannerROS:
   # Trajectory Scoring
   path_distance_bias: 32.0
   goal_distance_bias: 24.0
-  occdist_scale: 10.0
+  occdist_scale: 0.02
   forward_point_distance: 0.6
   
   # Oscillation Prevention

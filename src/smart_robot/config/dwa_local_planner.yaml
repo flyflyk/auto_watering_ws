@@ -9,7 +9,7 @@ DWAPlannerROS:
   min_vel_theta: -2.5
 
   # Goal Tolerance
-  yaw_goal_tolerance: 3.0
+  yaw_goal_tolerance: 6.28
   xy_goal_tolerance: 0.3
   
   # Forward Simulation

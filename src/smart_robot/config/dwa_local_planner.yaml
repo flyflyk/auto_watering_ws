@@ -10,7 +10,7 @@ DWAPlannerROS:
 
   # Goal Tolerance
   yaw_goal_tolerance: 6.28
-  xy_goal_tolerance: 0.3
+  xy_goal_tolerance: 0.8
   latch_xy_goal_tolerance: true
   
   # Forward Simulation

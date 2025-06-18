@@ -1,12 +1,12 @@
 plants:
   - name: "plant_target_1"
-    position: {x: -7.0, y: 7.0, z: 0.0}
+    position: {x: -4.5, y: 4, z: 0.0}
   - name: "plant_target_2"
-    position: {x: -5.0, y: -8.0, z: 0.0}
+    position: {x: -0.5, y: -0.5, z: 0.0}
   - name: "plant_target_3"
-    position: {x: 0, y: -6.0, z: 0.0}
+    position: {x: 4, y: -4, z: 0.0}
   - name: "plant_target_4"
-    position: {x: 7.0, y: 8.0, z: 0.0}
+    position: {x: 4, y: 4, z: 0.0}
 
 charging_station:
-  position: {x: -8.0, y: -8.0, z: 0.0}
+  position: {x: -4.0, y: -4.0, z: 0.0}

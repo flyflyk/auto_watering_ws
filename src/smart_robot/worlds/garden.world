@@ -17,138 +17,49 @@
       <pose>0 0 0.5 0 0 0</pose>
       <link name="walls">
         <!-- North Wall -->
-        <visual name="visual_north"><pose>0 10 0 0 0 0</pose><geometry><box><size>20 0.2 1</size></box></geometry></visual>
-        <collision name="collision_north"><pose>0 10 0 0 0 0</pose><geometry><box><size>20 0.2 1</size></box></geometry></collision>
+        <visual name="visual_north"><pose>0 5 0 0 0 0</pose><geometry><box><size>10 0.2 1</size></box></geometry></visual>
+        <collision name="collision_north"><pose>0 5 0 0 0 0</pose><geometry><box><size>10 0.2 1</size></box></geometry></collision>
         <!-- South Wall -->
-        <visual name="visual_south"><pose>0 -10 0 0 0 0</pose><geometry><box><size>20 0.2 1</size></box></geometry></visual>
-        <collision name="collision_south"><pose>0 -10 0 0 0 0</pose><geometry><box><size>20 0.2 1</size></box></geometry></collision>
+        <visual name="visual_south"><pose>0 -5 0 0 0 0</pose><geometry><box><size>10 0.2 1</size></box></geometry></visual>
+        <collision name="collision_south"><pose>0 -5 0 0 0 0</pose><geometry><box><size>10 0.2 1</size></box></geometry></collision>
         <!-- East Wall -->
-        <visual name="visual_east"><pose>10 0 0 0 0 0</pose><geometry><box><size>0.2 20 1</size></box></geometry></visual>
-        <collision name="collision_east"><pose>10 0 0 0 0 0</pose><geometry><box><size>0.2 20 1</size></box></geometry></collision>
+        <visual name="visual_east"><pose>5 0 0 0 0 0</pose><geometry><box><size>0.2 10 1</size></box></geometry></visual>
+        <collision name="collision_east"><pose>5 0 0 0 0 0</pose><geometry><box><size>0.2 10 1</size></box></geometry></collision>
         <!-- West Wall -->
-        <visual name="visual_west"><pose>-10 0 0 0 0 0</pose><geometry><box><size>0.2 20 1</size></box></geometry></visual>
-        <collision name="collision_west"><pose>-10 0 0 0 0 0</pose><geometry><box><size>0.2 20 1</size></box></geometry></collision>
+        <visual name="visual_west"><pose>-5 0 0 0 0 0</pose><geometry><box><size>0.2 10 1</size></box></geometry></visual>
+        <collision name="collision_west"><pose>-5 0 0 0 0 0</pose><geometry><box><size>0.2 10 1</size></box></geometry></collision>
       </link>
-    </model>
-
-    <!-- ================== 內部障礙物 ================== -->
-
-    <!-- Walls -->
-    <model name="central_maze">
-      <static>true</static>
-      <pose>0 0 0 0 0 0</pose>
-      
-      <link name="maze_body">
-
-        <!-- 1. Mid H-Wall -->
-        <visual name="mid_h_wall_visual">
-          <pose>0 2 0.5 0 0 0</pose>
-          <geometry><box><size>8 0.2 1</size></box></geometry>
-        </visual>
-        <collision name="mid_h_wall_collision">
-          <pose>0 2 0.5 0 0 0</pose>
-          <geometry><box><size>8 0.2 1</size></box></geometry>
-        </collision>
-
-        <!-- 2. Left H-Wall -->
-        <visual name="left_h_wall_visual">
-          <pose>-4 -2 0.5 0 0 0</pose>
-          <geometry><box><size>4 0.2 1</size></box></geometry>
-        </visual>
-        <collision name="left_h_wall_collision">
-          <pose>-4 -2 0.5 0 0 0</pose>
-          <geometry><box><size>4 0.2 1</size></box></geometry>
-        </collision>
-
-        <!-- 3. Right H-Wall -->
-        <visual name="right_h_wall_visual">
-          <pose>7 6 0.5 0 0 0</pose>
-          <geometry><box><size>6 0.2 1</size></box></geometry>
-        </visual>
-        <collision name="right_h_wall_collision">
-          <pose>7 6 0.5 0 0 0</pose>
-          <geometry><box><size>6 0.2 1</size></box></geometry>
-        </collision>
-
-        <!-- 4. Left V-Wall 1 -->
-        <visual name="left_v_wall_1_visual">
-          <pose>-4 6 0.5 0 0 0</pose>
-          <geometry><box><size>0.2 8 1</size></box></geometry>
-        </visual>
-        <collision name="left_v_wall_1_collision">
-          <pose>-4 6 0.5 0 0 0</pose>
-          <geometry><box><size>0.2 8 1</size></box></geometry>
-        </collision>
-
-        <!-- 5. Left V-Wall 2 -->
-        <visual name="left_v_wall_2_visual">
-          <pose>-2 -6 0.5 0 0 0</pose>
-          <geometry><box><size>0.2 8 1</size></box></geometry>
-        </visual>
-        <collision name="left_v_wall_2_collision">
-          <pose>-2 -6 0.5 0 0 0</pose>
-          <geometry><box><size>0.2 8 1</size></box></geometry>
-        </collision>
-        
-        <!-- 6. Right V-Wall -->
-        <visual name="right_v_wall_visual">
-          <pose>4 -1 0.5 0 0 0</pose>
-          <geometry><box><size>0.2 6 1</size></box></geometry>
-        </visual>
-        <collision name="right_v_wall_collision">
-          <pose>4 -1 0.5 0 0 0</pose>
-          <geometry><box><size>0.2 6 1</size></box></geometry>
-        </collision>
-
-      </link>
-    </model>
-
-    <!-- 2. Pillars -->
-    <model name="pillar_1">
-        <static>true</static>
-        <pose>-7 0.5 0.5 0 0 0</pose>
-        <link name="link"><visual name="v"><geometry><cylinder><radius>0.6</radius><length>1.0</length></cylinder></geometry></visual><collision name="c"><geometry><cylinder><radius>0.15</radius><length>1.0</length></cylinder></geometry></collision></link>
-    </model>
-    <model name="pillar_2">
-        <static>true</static>
-        <pose>7 -6 0.5 0 0 0</pose>
-        <link name="link"><visual name="v"><geometry><cylinder><radius>0.6</radius><length>1.0</length></cylinder></geometry></visual><collision name="c"><geometry><cylinder><radius>0.15</radius><length>1.0</length></cylinder></geometry></collision></link>
-    </model>
-    <model name="pillar_3">
-        <static>true</static>
-        <pose>1 6 0.5 0 0 0</pose>
-        <link name="link"><visual name="v"><geometry><cylinder><radius>0.6</radius><length>1.0</length></cylinder></geometry></visual><collision name="c"><geometry><cylinder><radius>0.15</radius><length>1.0</length></cylinder></geometry></collision></link>
     </model>
 
     <!-- ================== 盆栽 ================== -->
     <include>
       <uri>model://pot</uri>
       <name>plant_target_1</name>
-      <pose>-7 9 0 0 0 0</pose>
+      <pose>-4.5 4.5 0 0 0 0</pose>
     </include>
     <include>
       <uri>model://pot</uri>
       <name>plant_target_2</name>
-      <pose>-4 -9 0 0 0 0</pose>
+      <pose>0 0 0 0 0 0</pose>
     </include>
     <include>
       <uri>model://pot</uri>
       <name>plant_target_3</name>
-      <pose>0 -8 0 0 0 0</pose>
+      <pose>4.5 -4.5 0 0 0 0</pose>
     </include>
     <include>
       <uri>model://pot</uri>
       <name>plant_target_4</name>
-      <pose>9 8 0 0 0 0</pose>
+      <pose>4.5 4.5 0 0 0 0</pose>
     </include>
 
     <!-- 充電站 -->
     <model name='charging_station_marker'>
       <static>true</static>
-      <pose>-8 -8 0.01 0 0 0</pose> 
+      <pose>-4 -4 0.01 0 0 0</pose> 
       <link name='marker_link'>
         <visual name='visual_marker'>
-          <geometry><cylinder><radius>0.3</radius><length>0.02</length></cylinder></geometry>
+          <geometry><cylinder><radius>0.15</radius><length>0.02</length></cylinder></geometry>
           <material><script><uri>file://media/materials/scripts/gazebo.material</uri><name>Gazebo/Green</name></script></material>
         </visual>
       </link>

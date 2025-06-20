@@ -76,6 +76,8 @@
     <node name="moisture_sensor_node" pkg="smart_robot" type="moisture_sensor_node.py" output="screen"/>
     <node name="pump_driver_node" pkg="smart_robot" type="pump_driver_node.py" output="screen"/>
 
-    <!-- 7. (可選) 啟動 Rviz 進行可視化 -->
+    <!-- 7. 啟動 Rviz -->
+    <!--
     <node name="rviz" pkg="rviz" type="rviz" args="-d $(find smart_robot)/config/nav.rviz" />
+    -->
 </launch>

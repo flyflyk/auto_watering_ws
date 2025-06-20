@@ -23,12 +23,17 @@ git clone https://github.com/flyflyk/auto_watering_ws.git
 In auto_watering_ws:
 ```bash
 echo "source /opt/ros/noetic/setup.bash" >> ~/.bashrc
+echo "source ~/auto_watering_ws/devel/setup.bash" >> ~/.bashrc # Correct the path
+echo 'export GAZEBO_MODEL_PATH=$GAZEBO_MODEL_PATH:~/auto_watering_ws/src/smart_robot/models' >> ~/.bashrc # Correct the path
 source ~/.bashrc
 catkin build
-source devel/setup.bash
 ``` 
 
 ## Usage
 
+To launch:
 ```bash
 roslaunch smart_robot main.launch
+
+To Stop:
+Ctrl + C in the console the exit.

@@ -34,6 +34,7 @@ catkin build
 To launch:
 ```bash
 roslaunch smart_robot main.launch
+```
 
 To Stop:
-Ctrl + C in the console the exit.
+Ctrl + C in the console to exit.
